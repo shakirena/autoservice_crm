@@ -40,8 +40,8 @@ const selectStyle = {
 }
 
 function ServicesPage() {
-  const { user } = useAuth()
-  const isAdmin = user?.role === 'admin'
+  const { role } = useAuth()
+  const isAdmin = role === 'admin'
 
   const [showCategoryForm, setShowCategoryForm] = useState(false)
   const [editCategory, setEditCategory] = useState(null)
