@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect } from 'react'
-import { onAuthStateChanged } from 'firebase/auth'
+import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth'
 import { doc, getDoc } from 'firebase/firestore'
 import { auth, db } from './firebase.js'
 import { useAuthStore } from '../store/authStore.js'
@@ -20,6 +20,15 @@ export function AuthProvider({ children }) {
         // so the UI reflects the mirror field immediately without a token refresh.
         try {
           const snap = await getDoc(doc(db, 'users', firebaseUser.uid))
+          // MVP-блокировка: если disabled === true — принудительно разлогиниваем.
+          // Реальный disabled через Admin SDK недоступен из браузера; ProtectedRoute
+          // перенаправит на /login как только user станет null.
+          if (snap.exists() && snap.data().disabled === true) {
+            await firebaseSignOut(auth)
+            reset()
+            setLoading(false)
+            return
+          }
           const role = snap.exists() ? (snap.data().role ?? 'client') : 'client'
           setUser(firebaseUser)
           setRole(role)

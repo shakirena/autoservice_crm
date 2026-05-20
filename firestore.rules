@@ -2,40 +2,67 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // ─── Helper functions ──────────────────────────────────────────────────────
+
     function isAuthed() {
       return request.auth != null;
     }
 
-    function hasRole(role) {
-      return isAuthed() && request.auth.token.role == role;
+    // Читает роль из Firestore (зеркало — не custom claims).
+    // Feature #7: роль хранится в users/{uid}.role, не в custom claims.
+    function callerRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
     }
 
     function isAdmin() {
-      return hasRole('admin');
+      return isAuthed() && callerRole() == 'admin';
     }
 
     function isManager() {
-      return hasRole('manager');
+      return isAuthed() && callerRole() == 'manager';
     }
 
     function isMechanic() {
-      return hasRole('mechanic');
+      return isAuthed() && callerRole() == 'mechanic';
     }
 
     function isClient() {
-      return hasRole('client');
+      return isAuthed() && callerRole() == 'client';
     }
 
     function isOwner(uid) {
       return isAuthed() && request.auth.uid == uid;
     }
 
+    // ─── users ─────────────────────────────────────────────────────────────────
+    // Feature #17: admin может читать/писать любой документ users/{uid}.
+    // Операция list (getDocs + query) разрешена для admin.
+
     match /users/{uid} {
+      // read включает get (одиночный документ) и list (query/getDocs по коллекции)
       allow read: if isOwner(uid) || isAdmin() || isManager();
-      allow create: if isAdmin();
-      allow update: if isOwner(uid) || isAdmin();
-      allow delete: if isAdmin();
+
+      // Создание — только admin (через usersService + secondary Firebase App)
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasAll([
+          'uid', 'email', 'displayName', 'role', 'disabled', 'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.disabled == false;
+
+      // Обновление:
+      //   - сам пользователь: только displayName / updatedAt
+      //   - admin: role, disabled, displayName / updatedAt
+      //   - owner: тільки displayName та updatedAt (не може підвищити власну роль)
+      allow update: if isAdmin()
+        || (isOwner(uid)
+            && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['displayName', 'updatedAt']));
+
+      // Удаление запрещено через UI (Out of Scope MVP)
+      allow delete: if false;
     }
+
+    // ─── orders ────────────────────────────────────────────────────────────────
 
     match /orders/{orderId} {
       allow read: if isAuthed() && (
@@ -50,10 +77,25 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // ─── clients ───────────────────────────────────────────────────────────────
+
     match /clients/{clientId} {
       allow read: if isAdmin() || isManager() || isMechanic();
       allow write: if isAdmin() || isManager();
     }
+
+    // ─── activityLogs ──────────────────────────────────────────────────────────
+    // Feature #17 (опционально): журнал действий admin над пользователями.
+    // Запись разрешена только admin; чтение — только admin.
+
+    match /activityLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasAll(['uid', 'action', 'targetUid', 'timestamp']);
+      allow update, delete: if false;
+    }
+
+    // ─── Catch-all deny ────────────────────────────────────────────────────────
 
     match /{document=**} {
       allow read, write: if false;
