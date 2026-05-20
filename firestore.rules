@@ -63,18 +63,15 @@ service cloud.firestore {
     }
 
     // ─── orders ────────────────────────────────────────────────────────────────
+    // Feature #21: admin+manager = полный CRUD; mechanic = read all + update status only;
+    // client = нет веб-доступа (Android only).
 
     match /orders/{orderId} {
-      allow read: if isAuthed() && (
-        isAdmin() ||
-        isManager() ||
-        isMechanic() ||
-        (isClient() && resource.data.clientId == request.auth.uid)
-      );
+      allow read: if isAdmin() || isManager() || isMechanic();
       allow create: if isAdmin() || isManager();
       allow update: if isAdmin() || isManager() ||
-        (isMechanic() && resource.data.mechanicId == request.auth.uid);
-      allow delete: if isAdmin();
+        (isMechanic() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'completedAt']));
+      allow delete: if false;
     }
 
     // ─── clients ───────────────────────────────────────────────────────────────
