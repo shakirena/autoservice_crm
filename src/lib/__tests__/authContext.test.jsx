@@ -1,19 +1,31 @@
-import { render, screen, act, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { AuthProvider, useAuth } from '../authContext.jsx'
 
-// Мок firebase/auth
+// Mock firebase/auth
 vi.mock('firebase/auth', () => ({
   onAuthStateChanged: vi.fn(),
-  signOut: vi.fn(),
 }))
 
-// Мок ../firebase.js
+// Mock firebase/firestore
+vi.mock('firebase/firestore', () => ({
+  doc: vi.fn(),
+  getDoc: vi.fn(),
+}))
+
+// Mock ../firebase.js
 vi.mock('../firebase.js', () => ({
   auth: {},
+  db: {},
 }))
 
-import { onAuthStateChanged, signOut } from 'firebase/auth'
+// Mock authService (logout used in signOut)
+vi.mock('../../services/authService.js', () => ({
+  logout: vi.fn(),
+}))
+
+import { onAuthStateChanged } from 'firebase/auth'
+import { getDoc } from 'firebase/firestore'
 
 function TestConsumer() {
   const { user, role, loading } = useAuth()
@@ -41,14 +53,15 @@ describe('AuthProvider', () => {
     expect(screen.getByTestId('loading')).toBeInTheDocument()
   })
 
-  it('предоставляет user и role после аутентификации', async () => {
-    const mockUser = {
-      email: 'admin@test.com',
-      getIdTokenResult: vi.fn().mockResolvedValue({
-        claims: { role: 'admin' },
-      }),
-    }
-    onAuthStateChanged.mockImplementation((auth, callback) => {
+  it('предоставляет user и role из Firestore после аутентификации', async () => {
+    const mockUser = { uid: 'uid-1', email: 'admin@test.com' }
+
+    getDoc.mockResolvedValue({
+      exists: () => true,
+      data: () => ({ role: 'admin' }),
+    })
+
+    onAuthStateChanged.mockImplementation((_auth, callback) => {
       callback(mockUser)
       return () => {}
     })
@@ -65,12 +78,15 @@ describe('AuthProvider', () => {
     })
   })
 
-  it('устанавливает role=client если claim отсутствует', async () => {
-    const mockUser = {
-      email: 'user@test.com',
-      getIdTokenResult: vi.fn().mockResolvedValue({ claims: {} }),
-    }
-    onAuthStateChanged.mockImplementation((auth, callback) => {
+  it('устанавливает role=client если поле role отсутствует в Firestore', async () => {
+    const mockUser = { uid: 'uid-2', email: 'user@test.com' }
+
+    getDoc.mockResolvedValue({
+      exists: () => true,
+      data: () => ({}),
+    })
+
+    onAuthStateChanged.mockImplementation((_auth, callback) => {
       callback(mockUser)
       return () => {}
     })
@@ -86,8 +102,54 @@ describe('AuthProvider', () => {
     })
   })
 
+  it('устанавливает role=client если документ пользователя не существует', async () => {
+    const mockUser = { uid: 'uid-3', email: 'new@test.com' }
+
+    getDoc.mockResolvedValue({
+      exists: () => false,
+      data: () => null,
+    })
+
+    onAuthStateChanged.mockImplementation((_auth, callback) => {
+      callback(mockUser)
+      return () => {}
+    })
+
+    render(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('role')).toHaveTextContent('client')
+    })
+  })
+
+  it('fallback role=client при ошибке Firestore', async () => {
+    const mockUser = { uid: 'uid-4', email: 'error@test.com' }
+
+    getDoc.mockRejectedValue(new Error('Firestore unavailable'))
+
+    onAuthStateChanged.mockImplementation((_auth, callback) => {
+      callback(mockUser)
+      return () => {}
+    })
+
+    render(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('user')).toHaveTextContent('error@test.com')
+      expect(screen.getByTestId('role')).toHaveTextContent('client')
+    })
+  })
+
   it('очищает user и role после выхода', async () => {
-    onAuthStateChanged.mockImplementation((auth, callback) => {
+    onAuthStateChanged.mockImplementation((_auth, callback) => {
       callback(null)
       return () => {}
     })
