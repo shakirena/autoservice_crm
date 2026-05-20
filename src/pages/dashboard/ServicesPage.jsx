@@ -56,6 +56,8 @@ function ServicesPage() {
   })
 
   function handleEditCategory(cat) {
+    setShowServiceForm(false)
+    setEditService(null)
     setEditCategory(cat)
     setShowCategoryForm(true)
   }
@@ -66,6 +68,8 @@ function ServicesPage() {
   }
 
   function handleEditService(svc) {
+    setShowCategoryForm(false)
+    setEditCategory(null)
     setEditService(svc)
     setShowServiceForm(true)
   }
@@ -97,7 +101,7 @@ function ServicesPage() {
               type="button"
               data-testid="add-category-button"
               style={addBtnStyle}
-              onClick={() => setShowCategoryForm(true)}
+              onClick={() => handleEditCategory(null)}
             >
               + Добавить категорию
             </button>
@@ -142,7 +146,7 @@ function ServicesPage() {
                 type="button"
                 data-testid="add-service-button"
                 style={addBtnStyle}
-                onClick={() => setShowServiceForm(true)}
+                onClick={() => handleEditService(null)}
               >
                 + Добавить услугу
               </button>
