@@ -122,13 +122,14 @@ function ClientForm({ initialData = null, onClose }) {
   }, [initialData, reset])
 
   async function onSubmit(values) {
+    if (!user?.uid) return
     try {
       if (isEdit) {
         await updateClient({ id: initialData.id, data: values })
       } else {
         await createClient({
           ...values,
-          createdBy: user?.uid ?? '',
+          createdBy: user.uid,
         })
       }
       onClose()
