@@ -1,75 +1,87 @@
-# AutoService CRM — Project Context
+# CLAUDE.md
 
-## Стек
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-- **Frontend:** React 19 + Vite 8
-- **Routing:** React Router DOM 7
-- **State:** Zustand 5
-- **Data fetching:** TanStack React Query 5
-- **Forms:** React Hook Form 7
-- **Backend / DB:** Firebase (Firestore, Auth, Storage)
-- **Language:** JavaScript (ESM)
-- **Linter:** ESLint 10
+## Commands
 
-## Структура проекта
+```bash
+npm run dev       # Dev server with HMR (Vite)
+npm run build     # Production build → dist/
+npm run lint      # ESLint (js + jsx, react-hooks rules)
+npm run preview   # Serve production build locally
+```
+
+No test runner is configured yet. When adding tests, use **Vitest** (already compatible with the Vite setup — add `vitest` to devDependencies).
+
+## Project State
+
+Early-stage CRM. `src/` currently contains only the Vite default starter (App.jsx + main.jsx). All dependencies are installed but no CRM features are implemented yet.
+
+## Tech Stack
+
+- **React 19** + **Vite 8** — no TypeScript, plain JS (ESM)
+- **Firebase** (`autoservice-crm-b09d8`) — Firestore + Auth + Storage + Hosting
+- **React Router DOM 7** — client-side routing
+- **Zustand 5** — local/global state
+- **TanStack React Query 5** — server state, async data fetching
+- **React Hook Form 7** — form management
+
+## Architecture (Intended)
 
 ```
 src/
-├── components/     # Переиспользуемые UI-компоненты
-├── pages/          # Страницы (роуты)
-├── features/       # Feature-модули (бизнес-логика)
-├── services/       # Firebase-сервисы (Firestore CRUD)
-├── hooks/          # Кастомные React-хуки
-├── store/          # Zustand-сторы
-├── lib/            # Инициализация Firebase и утилиты
-└── types/          # JSDoc typedef / PropTypes
+  lib/firebase.js       # Firebase app init (reads VITE_FIREBASE_* from env)
+  services/             # Firestore CRUD — one file per domain entity
+  store/                # Zustand stores
+  hooks/                # Custom hooks (wrap TanStack Query + services)
+  features/             # Feature modules (collocate components + logic)
+  pages/                # Route-level components
+  components/           # Shared UI primitives
 ```
 
-## Build-команды
+**Data flow:** `pages` → `hooks` (useQuery/useMutation) → `services` (Firestore SDK) → Firebase.  
+**Side effects** live in services only — components never import Firestore directly.
 
-```bash
-npm run dev       # Dev-сервер (Vite HMR)
-npm run build     # Production build
-npm run lint      # ESLint проверка
-npm run preview   # Preview production build
-```
+## Firebase
 
-## Test-команды
+Config variables are in `.env` (prefix `VITE_FIREBASE_*`). Firestore Security Rules must always enforce `request.auth != null` as baseline. RBAC roles are stored in Firebase Auth custom claims (`request.auth.token.role`) and mirrored in `users/{uid}.role` in Firestore.
 
-```bash
-# Unit-тесты (когда будут добавлены)
-npm test
-npm run test:coverage
-```
+| Role | Access |
+|------|--------|
+| `admin` | Full access |
+| `manager` | CRM operations, no system settings |
+| `mechanic` | View + edit assigned orders |
+| `client` | Own orders only |
 
-## Ролевая модель (RBAC)
+## Key Conventions
 
-| Роль | Права |
-|------|-------|
-| `admin` | Полный доступ |
-| `manager` | CRM-операции, нет настроек системы |
-| `mechanic` | Просмотр + редактирование заказов |
-| `client` | Только свои заказы |
-
-Роль хранится в Firebase Auth custom claims и Firestore `users/{uid}.role`.
+- **ESM only** — no CommonJS (`require`). All imports use `.js` or `.jsx` extension or bare specifiers.
+- **No TypeScript** — use JSDoc `@typedef` for complex shapes if needed.
+- Firestore listeners (`onSnapshot`) belong in hooks, not in components or stores.
+- Zustand stores hold UI state and optimistic updates; React Query owns the authoritative server cache.
+- Forms always go through React Hook Form — no uncontrolled inputs in form elements.
+- E2E selectors: only `[data-testid='*']` attributes — no CSS classes or XPath in tests.
 
 ## Deploy
 
 ```bash
 npm run build
-# Статика из dist/ деплоится на Firebase Hosting
-firebase deploy --only hosting
+firebase deploy --only hosting       # static dist/ → Firebase Hosting
+firebase deploy --only firestore:rules
 ```
 
-## Firebase проект
+## Agent System
 
-Конфиг в `src/lib/firebase.js`. Переменные окружения в `.env.local`.
+Multi-agent development pipeline documented in `.claude/AGENTS_FRAMEWORK.md`.
 
-## Агентская система
+Quick start:
+```
+/setup-board   # create 35 GitHub labels + Project Board (once)
+/feature <description>
+/analyze #N
+/develop #N
+/test #N
+/deploy staging
+```
 
-Документация: `.claude/AGENTS_FRAMEWORK.md`
-
-Быстрый старт:
-- `/setup-board` — инициализировать GitHub labels + Project Board (один раз)
-- `/feature <описание>` — создать новую фичу
-- `/kanban <описание>` — полный pipeline от идеи до staging
+Full pipeline shortcut: `/kanban <description>`
