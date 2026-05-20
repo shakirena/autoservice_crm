@@ -7,7 +7,6 @@ import {
   deleteDoc,
   query,
   where,
-  orderBy,
   serverTimestamp,
 } from 'firebase/firestore'
 import { db } from '../lib/firebase.js'
@@ -55,9 +54,9 @@ export const VEHICLE_COMPONENTS = [
  * @returns {Promise<CategoryDoc[]>}
  */
 export async function getCategories() {
-  const q = query(collection(db, 'serviceCategories'), orderBy('name', 'asc'))
-  const snap = await getDocs(q)
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+  const snap = await getDocs(collection(db, 'serviceCategories'))
+  const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+  return docs.sort((a, b) => a.name.localeCompare(b.name, 'uk'))
 }
 
 /**
@@ -124,14 +123,16 @@ export async function deleteCategory(id) {
 export async function getServices(filters = {}) {
   const { categoryId, vehicleComponent, archived = false } = filters
 
-  const constraints = [where('archived', '==', archived), orderBy('name', 'asc')]
+  // orderBy перенесён на клиент — избегает составного индекса Firestore
+  const constraints = [where('archived', '==', archived)]
 
-  if (categoryId) constraints.unshift(where('categoryId', '==', categoryId))
-  if (vehicleComponent) constraints.unshift(where('vehicleComponent', '==', vehicleComponent))
+  if (categoryId) constraints.push(where('categoryId', '==', categoryId))
+  if (vehicleComponent) constraints.push(where('vehicleComponent', '==', vehicleComponent))
 
   const q = query(collection(db, 'services'), ...constraints)
   const snap = await getDocs(q)
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+  const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+  return docs.sort((a, b) => a.name.localeCompare(b.name, 'uk'))
 }
 
 /**
