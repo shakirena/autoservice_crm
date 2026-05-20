@@ -56,7 +56,7 @@ export const VEHICLE_COMPONENTS = [
 export async function getCategories() {
   const snap = await getDocs(collection(db, 'serviceCategories'))
   const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
-  return docs.sort((a, b) => a.name.localeCompare(b.name, 'uk'))
+  return docs.sort((a, b) => a.name.localeCompare(b.name, 'ru'))
 }
 
 /**
@@ -132,7 +132,7 @@ export async function getServices(filters = {}) {
   const q = query(collection(db, 'services'), ...constraints)
   const snap = await getDocs(q)
   const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
-  return docs.sort((a, b) => a.name.localeCompare(b.name, 'uk'))
+  return docs.sort((a, b) => a.name.localeCompare(b.name, 'ru'))
 }
 
 /**

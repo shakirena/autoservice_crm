@@ -82,7 +82,7 @@ function ServiceForm({ service, onClose }) {
       </div>
 
       <div>
-        <label htmlFor="svc-price">Цена (грн)</label>
+        <label htmlFor="svc-price">Цена (₼)</label>
         <input
           id="svc-price"
           type="number"
