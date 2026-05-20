@@ -8,6 +8,7 @@ import OrdersPage from './pages/dashboard/OrdersPage.jsx'
 import ClientsPage from './pages/dashboard/ClientsPage.jsx'
 import SettingsPage from './pages/dashboard/SettingsPage.jsx'
 import MyOrdersPage from './pages/dashboard/MyOrdersPage.jsx'
+import ServicesPage from './pages/dashboard/ServicesPage.jsx'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -75,6 +76,14 @@ function App() {
             element={
               <RoleGuard allowed={['admin', 'mechanic']}>
                 <MyOrdersPage />
+              </RoleGuard>
+            }
+          />
+          <Route
+            path="services"
+            element={
+              <RoleGuard allowed={['admin', 'manager']}>
+                <ServicesPage />
               </RoleGuard>
             }
           />
