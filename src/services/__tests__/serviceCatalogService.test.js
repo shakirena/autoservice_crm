@@ -62,6 +62,18 @@ describe('getCategories', () => {
     const result = await getCategories()
     expect(result).toEqual([])
   })
+
+  it('сортирует категории по имени', async () => {
+    getDocs.mockResolvedValue(
+      makeSnap([
+        { id: 'b', name: 'Шины' },
+        { id: 'a', name: 'Двигатель' },
+      ]),
+    )
+    const result = await getCategories()
+    expect(result[0].name).toBe('Двигатель')
+    expect(result[1].name).toBe('Шины')
+  })
 })
 
 describe('createCategory', () => {
@@ -156,6 +168,18 @@ describe('getServices', () => {
     const { where: whereMock } = await import('firebase/firestore')
     const componentCalls = whereMock.mock.calls.filter(([f]) => f === 'vehicleComponent')
     expect(componentCalls.length).toBeGreaterThan(0)
+  })
+
+  it('сортирует услуги по имени', async () => {
+    getDocs.mockResolvedValue(
+      makeSnap([
+        { id: 'b', name: 'Шиномонтаж', archived: false },
+        { id: 'a', name: 'Замена масла', archived: false },
+      ]),
+    )
+    const result = await getServices()
+    expect(result[0].name).toBe('Замена масла')
+    expect(result[1].name).toBe('Шиномонтаж')
   })
 
   it('включает archived услуги при archived=true', async () => {
