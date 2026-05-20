@@ -58,7 +58,7 @@ function App() {
           <Route
             path="clients"
             element={
-              <RoleGuard allowed={['admin', 'manager']}>
+              <RoleGuard allowed={['admin', 'manager', 'mechanic']}>
                 <ClientsPage />
               </RoleGuard>
             }
