@@ -1,10 +1,6 @@
 import { useCategories, useDeleteCategory } from '../../hooks/useServiceCatalog.js'
-import VehicleComponentBadge from './VehicleComponentBadge.jsx'
 
 /**
- * Список категорий услуг.
- * Для роли admin отображает кнопки редактирования и удаления.
- *
  * @param {{ isAdmin: boolean, onEdit: (category: object) => void }} props
  */
 function CategoryList({ isAdmin, onEdit }) {
@@ -36,7 +32,6 @@ function CategoryList({ isAdmin, onEdit }) {
       {categories.map((cat) => (
         <li key={cat.id} data-testid={`category-item-${cat.id}`}>
           <span>{cat.name}</span>
-          <VehicleComponentBadge component={cat.vehicleComponent} />
           {isAdmin && (
             <>
               <button

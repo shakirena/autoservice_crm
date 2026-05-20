@@ -1,14 +1,11 @@
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useCreateCategory, useUpdateCategory } from '../../hooks/useServiceCatalog.js'
-import { VEHICLE_COMPONENTS } from '../../services/serviceCatalogService.js'
 
 /**
  * Форма создания / редактирования категории услуг.
- * Использует React Hook Form.
  *
  * @param {{ category?: object, onClose: () => void }} props
- *   category — если передан, форма работает в режиме редактирования
  */
 function CategoryForm({ category, onClose }) {
   const isEdit = Boolean(category)
@@ -22,17 +19,14 @@ function CategoryForm({ category, onClose }) {
     defaultValues: {
       name: category?.name ?? '',
       description: category?.description ?? '',
-      vehicleComponent: category?.vehicleComponent ?? 'other',
     },
   })
 
-  // Sync form values when editing a different category
   useEffect(() => {
     if (category) {
       reset({
         name: category.name,
         description: category.description ?? '',
-        vehicleComponent: category.vehicleComponent ?? 'other',
       })
     }
   }, [category, reset])
@@ -70,24 +64,6 @@ function CategoryForm({ category, onClose }) {
           data-testid="category-form-description"
           {...register('description')}
         />
-      </div>
-
-      <div>
-        <label htmlFor="cat-vehicle-component">Узел автомобиля</label>
-        <select
-          id="cat-vehicle-component"
-          data-testid="category-form-vehicle-component"
-          {...register('vehicleComponent', { required: 'Выберите узел' })}
-        >
-          {VEHICLE_COMPONENTS.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
-        {errors.vehicleComponent && (
-          <span data-testid="category-form-vehicle-error">
-            {errors.vehicleComponent.message}
-          </span>
-        )}
       </div>
 
       <div>
