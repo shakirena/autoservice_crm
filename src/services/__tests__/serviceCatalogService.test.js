@@ -141,6 +141,30 @@ describe('getServices', () => {
     const result = await getServices()
     expect(result).toEqual([])
   })
+
+  it('передаёт where-условие categoryId если фильтр задан', async () => {
+    getDocs.mockResolvedValue(makeSnap([]))
+    await getServices({ categoryId: 'cat1' })
+    const { where: whereMock } = await import('firebase/firestore')
+    const categoryCalls = whereMock.mock.calls.filter(([f]) => f === 'categoryId')
+    expect(categoryCalls.length).toBeGreaterThan(0)
+  })
+
+  it('передаёт where-условие vehicleComponent если фильтр задан', async () => {
+    getDocs.mockResolvedValue(makeSnap([]))
+    await getServices({ vehicleComponent: 'engine' })
+    const { where: whereMock } = await import('firebase/firestore')
+    const componentCalls = whereMock.mock.calls.filter(([f]) => f === 'vehicleComponent')
+    expect(componentCalls.length).toBeGreaterThan(0)
+  })
+
+  it('включает archived услуги при archived=true', async () => {
+    getDocs.mockResolvedValue(
+      makeSnap([{ id: 'svc2', name: 'Архивная', archived: true }]),
+    )
+    const result = await getServices({ archived: true })
+    expect(result[0].archived).toBe(true)
+  })
 })
 
 describe('createService', () => {
