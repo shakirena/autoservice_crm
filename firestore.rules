@@ -84,6 +84,22 @@ service cloud.firestore {
       allow write: if isAdmin() || isManager();
     }
 
+    // ─── serviceCategories ─────────────────────────────────────────────────────
+    // Feature #18: admin = CRUD; manager = read-only
+
+    match /serviceCategories/{id} {
+      allow read: if isAdmin() || isManager();
+      allow write: if isAdmin();
+    }
+
+    // ─── services ─────────────────────────────────────────────────────────────
+    // Feature #18: admin = CRUD (incl. archive); manager = read-only
+
+    match /services/{id} {
+      allow read: if isAdmin() || isManager();
+      allow write: if isAdmin();
+    }
+
     // ─── activityLogs ──────────────────────────────────────────────────────────
     // Feature #17 (опционально): журнал действий admin над пользователями.
     // Запись разрешена только admin; чтение — только admin.

@@ -7,6 +7,7 @@ _Обновлено: 2026-05-20_
 | Feature | Issue | Stories | Spec | Arch | Статус |
 |---------|-------|---------|------|------|--------|
 | Инициализация CRM: структура + Firebase | #1 | #2, #3, #4, #5, #6 | docs/specs/feature-1-init-firebase.md | docs/arch/feature-1-init-firebase.md | ready-to-deploy |
+| Справочник услуг | #18 | #28, #29, #30, #31, #32 | docs/specs/feature-18-service-catalog.md | docs/arch/feature-18-service-catalog.md | ready-for-dev |
 
 ## Story Traceability
 
@@ -17,6 +18,11 @@ _Обновлено: 2026-05-20_
 | #4 US-3: .env.example | #1 | AC-8 | .env.example | — | — |
 | #5 US-4: Security Rules | #1 | AC-4 | firestore.rules | — | TC-04 |
 | #6 US-5: AuthContext + useAuth | #1 | AC-5 | src/lib/authContext.jsx | authContext.test.jsx | TC-01 |
+| #28 US-18-1: Список категорий и услуг | #18 | AC US-18-1 | src/pages/dashboard/ServicesPage.jsx | — | — |
+| #29 US-18-2: CRUD категорий | #18 | AC US-18-2 | src/features/services/CategoryForm.jsx, CategoryList.jsx | — | — |
+| #30 US-18-3: CRUD услуг | #18 | AC US-18-3 | src/features/services/ServiceForm.jsx, ServiceList.jsx | — | — |
+| #31 US-18-4: Архивирование услуги | #18 | AC US-18-4 | src/features/services/ServiceCard.jsx | — | — |
+| #32 US-18-5: Фильтрация по узлу | #18 | AC US-18-5 | src/features/services/ServiceList.jsx | — | — |
 
 ## Code Coverage
 
