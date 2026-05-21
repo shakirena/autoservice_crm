@@ -1,5 +1,5 @@
 import OrderStatusBadge from '../OrderStatusBadge.jsx'
-import { VEHICLE_COMPONENTS } from './WizardStep3Component.jsx'
+import { VEHICLE_COMPONENT_OPTIONS as VEHICLE_COMPONENTS } from '../orderConstants.js'
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
