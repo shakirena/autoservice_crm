@@ -10,6 +10,7 @@ const NAV_CONFIG = {
     { label: 'Клиенты',      path: 'clients',    testId: 'nav-item-clients'    },
     { label: 'Автомобили',   path: 'vehicles',   testId: 'nav-item-vehicles'   },
     { label: 'Услуги',       path: 'services',   testId: 'nav-item-services'   },
+    { label: 'Аналитика',    path: 'analytics',  testId: 'nav-item-analytics'  },
     { label: 'Настройки',    path: 'settings',   testId: 'nav-item-settings'   },
   ],
   manager: [

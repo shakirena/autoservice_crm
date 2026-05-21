@@ -12,6 +12,7 @@ import SettingsPage from './pages/dashboard/SettingsPage.jsx'
 import MyOrdersPage from './pages/dashboard/MyOrdersPage.jsx'
 import ServicesPage from './pages/dashboard/ServicesPage.jsx'
 import VehiclesPage from './pages/dashboard/VehiclesPage.jsx'
+import AnalyticsPage from './pages/dashboard/AnalyticsPage.jsx'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -111,6 +112,14 @@ function App() {
             element={
               <RoleGuard allowed={['admin', 'manager']}>
                 <VehiclesPage />
+              </RoleGuard>
+            }
+          />
+          <Route
+            path="analytics"
+            element={
+              <RoleGuard allowed={['admin']}>
+                <AnalyticsPage />
               </RoleGuard>
             }
           />
