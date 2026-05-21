@@ -5,6 +5,8 @@ import DashboardLayout from './components/layout/DashboardLayout.jsx'
 import DashboardIndexPage from './pages/dashboard/DashboardIndexPage.jsx'
 import UsersPage from './pages/dashboard/UsersPage.jsx'
 import OrdersPage from './pages/dashboard/OrdersPage.jsx'
+import NewOrderPage from './pages/dashboard/NewOrderPage.jsx'
+import OrderDetailPage from './pages/dashboard/OrderDetailPage.jsx'
 import ClientsPage from './pages/dashboard/ClientsPage.jsx'
 import SettingsPage from './pages/dashboard/SettingsPage.jsx'
 import MyOrdersPage from './pages/dashboard/MyOrdersPage.jsx'
@@ -51,8 +53,24 @@ function App() {
           <Route
             path="orders"
             element={
-              <RoleGuard allowed={['admin', 'manager']}>
+              <RoleGuard allowed={['admin', 'manager', 'mechanic']}>
                 <OrdersPage />
+              </RoleGuard>
+            }
+          />
+          <Route
+            path="orders/new"
+            element={
+              <RoleGuard allowed={['admin', 'manager']}>
+                <NewOrderPage />
+              </RoleGuard>
+            }
+          />
+          <Route
+            path="orders/:id"
+            element={
+              <RoleGuard allowed={['admin', 'manager', 'mechanic']}>
+                <OrderDetailPage />
               </RoleGuard>
             }
           />
