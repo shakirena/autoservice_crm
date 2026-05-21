@@ -176,10 +176,10 @@ function NewOrderPage() {
       {/* Step content */}
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         {step === 1 && (
-          <WizardStep1Client register={register} errors={errors} />
+          <WizardStep1Client register={register} errors={errors} setValue={setValue} uid={user?.uid} />
         )}
         {step === 2 && (
-          <WizardStep2Vehicle clientId={clientId} register={register} errors={errors} />
+          <WizardStep2Vehicle clientId={clientId} register={register} errors={errors} setValue={setValue} />
         )}
         {step === 3 && (
           <WizardStep3Component
