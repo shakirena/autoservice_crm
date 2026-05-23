@@ -4,7 +4,7 @@ import { useAuth } from '../../lib/authContext.jsx'
 import { useOrders } from '../../hooks/useOrders.js'
 import { useClients } from '../../hooks/useClients.js'
 import { useVehicles } from '../../hooks/useVehicles.js'
-import OrderList from '../../features/orders/OrderList.jsx'
+import OrderTable from '../../features/orders/OrderTable.jsx'
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
@@ -171,11 +171,13 @@ function OrdersPage() {
       )}
 
       {/* Order table */}
-      <OrderList
+      <OrderTable
         orders={orders}
         clients={clients}
         vehicles={vehicles}
         isLoading={isLoading}
+        isError={isError}
+        error={error}
         statusFilter={statusFilter}
         onAddFirst={canCreate ? () => navigate('/dashboard/orders/new') : undefined}
       />
