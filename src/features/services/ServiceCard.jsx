@@ -30,7 +30,9 @@ function ServiceCard({ service, isAdmin, onEdit }) {
       )}
 
       <span data-testid={`service-card-price-${service.id}`}>
-        {service.price.toLocaleString('ru-RU')} ₼
+        {service.price != null
+          ? `${service.price.toLocaleString('ru-RU')} ₼`
+          : 'Цена не указана'}
       </span>
 
       {isAdmin && (
