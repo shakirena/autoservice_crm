@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useCreateClient } from '../../../hooks/useClients.js'
 
@@ -87,6 +87,7 @@ const submitBtnStyle = {
  */
 function CreateClientModal({ uid, onCreated, onClose }) {
   const { mutateAsync: createClient } = useCreateClient()
+  const [serverError, setServerError] = useState(null)
 
   const {
     register,
@@ -106,8 +107,14 @@ function CreateClientModal({ uid, onCreated, onClose }) {
   }, [onClose])
 
   async function onSubmit(values) {
-    const { id } = await createClient({ ...values, createdBy: uid ?? '' })
-    onCreated(id)
+    setServerError(null)
+    try {
+      const { id } = await createClient({ ...values, createdBy: uid ?? '' })
+      onCreated(id)
+    } catch (err) {
+      console.error('CreateClientModal submit error:', err)
+      setServerError(err?.message ?? 'Ошибка сохранения. Попробуйте снова.')
+    }
   }
 
   return (
@@ -191,6 +198,15 @@ function CreateClientModal({ uid, onCreated, onClose }) {
               <p style={errorMsgStyle}>{errors.email.message}</p>
             )}
           </div>
+
+          {serverError && (
+            <p
+              data-testid="wizard-client-modal-error"
+              style={{ color: '#ef4444', fontSize: '13px', margin: '0 0 12px' }}
+            >
+              {serverError}
+            </p>
+          )}
 
           <div style={footerStyle}>
             <button

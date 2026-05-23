@@ -10,21 +10,6 @@ vi.mock('../../../../hooks/useClients.js', () => ({
 
 import { useCreateClient } from '../../../../hooks/useClients.js'
 
-// ─── Helper ───────────────────────────────────────────────────────────────────
-
-function setup(props = {}) {
-  const defaults = {
-    uid: 'uid-test',
-    onCreated: vi.fn(),
-    onClose: vi.fn(),
-  }
-  const merged = { ...defaults, ...props }
-  // Import lazily after mocks are registered
-  const { default: CreateClientModal } = require('../CreateClientModal.jsx')
-  render(<CreateClientModal {...merged} />)
-  return merged
-}
-
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe('CreateClientModal', () => {

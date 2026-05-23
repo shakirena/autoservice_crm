@@ -140,8 +140,6 @@ describe('WizardStep1Client', () => {
   })
 
   it('setValue вызывается с newId когда клиент появляется в списке', async () => {
-    // Сначала список пустой
-    const { rerender } = render(<div />) // placeholder
     useClients.mockReturnValue(makeClients([]))
 
     const WizardStep1Client = await importStep()
