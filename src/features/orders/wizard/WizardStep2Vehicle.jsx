@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useVehiclesByClient } from '../../../hooks/useVehicles.js'
 import CreateVehicleModal from './CreateVehicleModal.jsx'
 
@@ -54,10 +54,20 @@ const linkBtnStyle = {
 function WizardStep2Vehicle({ clientId, register, errors, setValue }) {
   const { data: vehicles = [], isLoading } = useVehiclesByClient(clientId)
   const [showModal, setShowModal] = useState(false)
+  // Ожидаем появления нового авто в списке перед вызовом setValue.
+  // Без этого браузер игнорирует select.value = id, если <option> ещё нет в DOM.
+  const [pendingVehicleId, setPendingVehicleId] = useState(null)
+
+  useEffect(() => {
+    if (pendingVehicleId && vehicles.some((v) => v.id === pendingVehicleId)) {
+      setValue('vehicleId', pendingVehicleId, { shouldValidate: true })
+      setPendingVehicleId(null)
+    }
+  }, [vehicles, pendingVehicleId, setValue])
 
   function handleCreated(newId) {
     setShowModal(false)
-    setValue('vehicleId', newId, { shouldValidate: true })
+    setPendingVehicleId(newId)
   }
 
   return (
