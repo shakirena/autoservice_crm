@@ -211,6 +211,34 @@ describe('createService', () => {
     expect(payload.createdAt).toBe('SERVER_TS')
     expect(result).toEqual({ id: 'newSvcId' })
   })
+
+  it('сохраняет price=null если цена не передана', async () => {
+    addDoc.mockResolvedValue({ id: 'svcNullPrice' })
+
+    await createService({
+      name: 'Диагностика',
+      categoryId: 'cat2',
+      vehicleComponent: 'other',
+      // price не передаётся
+    })
+
+    const [, payload] = addDoc.mock.calls[0]
+    expect(payload.price).toBeNull()
+  })
+
+  it('сохраняет price=null если передан null явно', async () => {
+    addDoc.mockResolvedValue({ id: 'x' })
+
+    await createService({
+      name: 'Диагностика',
+      price: null,
+      categoryId: 'cat2',
+      vehicleComponent: 'other',
+    })
+
+    const [, payload] = addDoc.mock.calls[0]
+    expect(payload.price).toBeNull()
+  })
 })
 
 describe('updateService', () => {

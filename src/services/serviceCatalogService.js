@@ -26,7 +26,7 @@ import { db } from '../lib/firebase.js'
  * @property {string}  id
  * @property {string}  name
  * @property {string}  [description]
- * @property {number}  price
+ * @property {number|null} [price]   — null если цена не установлена
  * @property {string}  categoryId
  * @property {'engine'|'gearbox'|'suspension'|'brakes'|'electrics'|'tires'|'body'|'other'} vehicleComponent
  * @property {boolean} archived
@@ -138,14 +138,14 @@ export async function getServices(filters = {}) {
 /**
  * Создаёт новую услугу (неархивированную по умолчанию).
  *
- * @param {{ name: string, description?: string, price: number, categoryId: string, vehicleComponent: string }} data
+ * @param {{ name: string, description?: string, price?: number|null, categoryId: string, vehicleComponent: string }} data
  * @returns {Promise<{ id: string }>}
  */
 export async function createService(data) {
   const ref = await addDoc(collection(db, 'services'), {
     name: data.name,
     description: data.description ?? '',
-    price: data.price,
+    price: data.price ?? null,     // null если не передана
     categoryId: data.categoryId,
     vehicleComponent: data.vehicleComponent,
     archived: false,
