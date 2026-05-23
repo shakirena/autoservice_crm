@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useForm } from 'react-hook-form'
 import { useCreateVehicle } from '../../../hooks/useVehicles.js'
 
@@ -139,7 +140,8 @@ function CreateVehicleModal({ clientId, onCreated, onClose }) {
     }
   }
 
-  return (
+  // Portal: рендерим в document.body, вне DOM-дерева wizard-формы (nested-form fix).
+  return createPortal(
     <div
       data-testid="wizard-vehicle-modal-overlay"
       style={overlayStyle}
@@ -294,7 +296,8 @@ function CreateVehicleModal({ clientId, onCreated, onClose }) {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
