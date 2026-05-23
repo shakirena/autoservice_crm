@@ -26,7 +26,7 @@ function ServiceForm({ service, onClose }) {
     defaultValues: {
       name: service?.name ?? '',
       description: service?.description ?? '',
-      price: service?.price ?? 0,
+      price: service?.price ?? '',     // пустая строка = цена не задана
       categoryId: service?.categoryId ?? '',
       vehicleComponent: service?.vehicleComponent ?? 'other',
     },
@@ -37,7 +37,7 @@ function ServiceForm({ service, onClose }) {
       reset({
         name: service.name,
         description: service.description ?? '',
-        price: service.price,
+        price: service.price ?? '',    // null/undefined → пустая строка
         categoryId: service.categoryId,
         vehicleComponent: service.vehicleComponent ?? 'other',
       })
@@ -49,7 +49,10 @@ function ServiceForm({ service, onClose }) {
   const { mutateAsync: updateService } = useUpdateService()
 
   async function onSubmit(values) {
-    const payload = { ...values, price: Number(values.price) }
+    // Пустая строка / пустое значение → null (цена не установлена)
+    const priceRaw = values.price
+    const price = priceRaw !== '' && priceRaw != null ? Number(priceRaw) : null
+    const payload = { ...values, price }
     if (isEdit) {
       await updateService({ id: service.id, data: payload })
     } else {
@@ -88,11 +91,12 @@ function ServiceForm({ service, onClose }) {
           type="number"
           min="0"
           step="0.01"
+          placeholder="не указана"
           data-testid="service-form-price"
           {...register('price', {
-            required: 'Цена обязательна',
             min: { value: 0, message: 'Цена не может быть отрицательной' },
-            valueAsNumber: true,
+            validate: (v) =>
+              v === '' || v == null || Number(v) >= 0 || 'Цена не может быть отрицательной',
           })}
         />
         {errors.price && (
