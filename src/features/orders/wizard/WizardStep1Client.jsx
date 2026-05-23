@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useClients } from '../../../hooks/useClients.js'
 import CreateClientModal from './CreateClientModal.jsx'
 
@@ -55,18 +55,21 @@ function WizardStep1Client({ register, errors, setValue, uid }) {
   const [showModal, setShowModal] = useState(false)
   // Ожидаем появления нового клиента в списке перед вызовом setValue.
   // Без этого браузер игнорирует select.value = id, если <option> ещё нет в DOM.
-  const [pendingClientId, setPendingClientId] = useState(null)
+  // useRef вместо useState — не вызывает дополнительных ре-рендеров и не нарушает
+  // правило react-hooks/set-state-in-effect (нет setState внутри effect-тела).
+  const pendingClientIdRef = useRef(null)
 
   useEffect(() => {
-    if (pendingClientId && clients.some((c) => c.id === pendingClientId)) {
-      setValue('clientId', pendingClientId, { shouldValidate: true })
-      setPendingClientId(null)
+    const pid = pendingClientIdRef.current
+    if (pid && clients.some((c) => c.id === pid)) {
+      setValue('clientId', pid, { shouldValidate: true })
+      pendingClientIdRef.current = null
     }
-  }, [clients, pendingClientId, setValue])
+  }, [clients, setValue])
 
   function handleCreated(newId) {
+    pendingClientIdRef.current = newId // синхронно до следующего рендера
     setShowModal(false)
-    setPendingClientId(newId)
   }
 
   return (

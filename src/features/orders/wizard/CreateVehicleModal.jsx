@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useCreateVehicle } from '../../../hooks/useVehicles.js'
 
@@ -99,6 +99,7 @@ const CURRENT_YEAR = new Date().getFullYear()
  */
 function CreateVehicleModal({ clientId, onCreated, onClose }) {
   const { mutateAsync: createVehicle } = useCreateVehicle()
+  const [serverError, setServerError] = useState(null)
 
   const {
     register,
@@ -124,12 +125,18 @@ function CreateVehicleModal({ clientId, onCreated, onClose }) {
   }, [onClose])
 
   async function onSubmit(values) {
-    const { id } = await createVehicle({
-      ...values,
-      clientId,
-      year: Number(values.year),
-    })
-    onCreated(id)
+    setServerError(null)
+    try {
+      const { id } = await createVehicle({
+        ...values,
+        clientId,
+        year: Number(values.year),
+      })
+      onCreated(id)
+    } catch (err) {
+      console.error('CreateVehicleModal submit error:', err)
+      setServerError(err?.message ?? 'Ошибка сохранения. Попробуйте снова.')
+    }
   }
 
   return (
@@ -252,6 +259,15 @@ function CreateVehicleModal({ clientId, onCreated, onClose }) {
               {...register('vin')}
             />
           </div>
+
+          {serverError && (
+            <p
+              data-testid="wizard-vehicle-modal-error"
+              style={{ color: '#ef4444', fontSize: '13px', margin: '0 0 12px' }}
+            >
+              {serverError}
+            </p>
+          )}
 
           <div style={footerStyle}>
             <button
