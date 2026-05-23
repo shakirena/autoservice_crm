@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../../lib/authContext.jsx'
-import CategoryList from '../../features/services/CategoryList.jsx'
+import CategoryTable from '../../features/services/CategoryTable.jsx'
 import CategoryForm from '../../features/services/CategoryForm.jsx'
 import ServiceTable from '../../features/services/ServiceTable.jsx'
 import ServiceForm from '../../features/services/ServiceForm.jsx'
@@ -108,7 +108,7 @@ function ServicesPage() {
           )}
         </div>
 
-        <CategoryList isAdmin={isAdmin} onEdit={handleEditCategory} />
+        <CategoryTable isAdmin={isAdmin} onEdit={handleEditCategory} />
       </section>
 
       {/* ── Services section ── */}
