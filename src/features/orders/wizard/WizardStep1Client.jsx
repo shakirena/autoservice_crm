@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useClients } from '../../../hooks/useClients.js'
 import CreateClientModal from './CreateClientModal.jsx'
 
@@ -53,10 +53,20 @@ const linkBtnStyle = {
 function WizardStep1Client({ register, errors, setValue, uid }) {
   const { data: clients = [], isLoading } = useClients()
   const [showModal, setShowModal] = useState(false)
+  // Ожидаем появления нового клиента в списке перед вызовом setValue.
+  // Без этого браузер игнорирует select.value = id, если <option> ещё нет в DOM.
+  const [pendingClientId, setPendingClientId] = useState(null)
+
+  useEffect(() => {
+    if (pendingClientId && clients.some((c) => c.id === pendingClientId)) {
+      setValue('clientId', pendingClientId, { shouldValidate: true })
+      setPendingClientId(null)
+    }
+  }, [clients, pendingClientId, setValue])
 
   function handleCreated(newId) {
     setShowModal(false)
-    setValue('clientId', newId, { shouldValidate: true })
+    setPendingClientId(newId)
   }
 
   return (

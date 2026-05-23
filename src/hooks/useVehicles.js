@@ -46,7 +46,8 @@ export function useCreateVehicle() {
   return useMutation({
     mutationFn: createVehicle,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: VEHICLES_QUERY_KEY })
+      // return промис — mutateAsync ждёт завершения рефетча перед резолвом
+      return queryClient.invalidateQueries({ queryKey: VEHICLES_QUERY_KEY })
     },
   })
 }

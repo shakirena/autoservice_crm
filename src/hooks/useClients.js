@@ -31,7 +31,8 @@ export function useCreateClient() {
   return useMutation({
     mutationFn: createClient,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: CLIENTS_QUERY_KEY })
+      // return промис — mutateAsync ждёт завершения рефетча перед резолвом
+      return queryClient.invalidateQueries({ queryKey: CLIENTS_QUERY_KEY })
     },
   })
 }
