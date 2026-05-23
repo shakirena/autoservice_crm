@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../../lib/authContext.jsx'
 import CategoryList from '../../features/services/CategoryList.jsx'
 import CategoryForm from '../../features/services/CategoryForm.jsx'
-import ServiceList from '../../features/services/ServiceList.jsx'
+import ServiceTable from '../../features/services/ServiceTable.jsx'
 import ServiceForm from '../../features/services/ServiceForm.jsx'
 import { VEHICLE_COMPONENTS } from '../../services/serviceCatalogService.js'
 
@@ -154,7 +154,7 @@ function ServicesPage() {
           </div>
         </div>
 
-        <ServiceList
+        <ServiceTable
           filters={filters}
           isAdmin={isAdmin}
           onEdit={handleEditService}

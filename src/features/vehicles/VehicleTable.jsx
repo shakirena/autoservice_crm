@@ -1,53 +1,7 @@
-import VehicleRow from './VehicleRow.jsx'
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
-const tableStyle = {
-  width: '100%',
-  borderCollapse: 'collapse',
-  fontSize: '14px',
-}
-
-const thStyle = {
-  padding: '10px 16px',
-  borderBottom: '2px solid #e5e7eb',
-  textAlign: 'left',
-  fontSize: '12px',
-  fontWeight: 600,
-  textTransform: 'uppercase',
-  color: '#6b7280',
-  whiteSpace: 'nowrap',
-}
-
-// ─── Skeleton row ──────────────────────────────────────────────────────────────
-
-function SkeletonRow() {
-  const cellStyle = {
-    padding: '14px 16px',
-    borderBottom: '1px solid #e5e7eb',
-  }
-  const barStyle = {
-    height: '14px',
-    background: '#e5e7eb',
-    borderRadius: '4px',
-    animation: 'pulse 1.5s ease-in-out infinite',
-  }
-  return (
-    <tr>
-      {[100, 120, 60, 110, 160, 160, 80].map((w, i) => (
-        <td key={i} style={cellStyle}>
-          <div style={{ ...barStyle, width: w }} />
-        </td>
-      ))}
-    </tr>
-  )
-}
-
-// ─── Main component ────────────────────────────────────────────────────────────
-
 /**
- * Таблица автомобилей с поддержкой состояний загрузки и пустого списка.
- * Admin/manager видят кнопку редактирования; остальные — только чтение.
+ * VehicleTable — таблица автомобилей с sticky header, striped rows, hover.
+ *
+ * Feature #57 — Story #59d
  *
  * @param {{
  *   vehicles: import('../../services/vehiclesService.js').VehicleDoc[],
@@ -59,88 +13,177 @@ function SkeletonRow() {
  *   onAddFirst: () => void,
  * }} props
  */
+
+import { useState } from 'react'
+import {
+  tableWrapStyle,
+  tableStyle,
+  theadStyle,
+  thStyle,
+  tdStyle,
+  rowStyle,
+  SkeletonRow,
+  EmptyRow,
+} from '../../components/ui/DataTable.jsx'
+
+// ─── Column count ─────────────────────────────────────────────────────────────
+
+const COLS = 7
+
+// ─── Vehicle row ──────────────────────────────────────────────────────────────
+
+function VehicleTableRow({ vehicle, index, role, clients, onEdit }) {
+  const [hovered, setHovered] = useState(false)
+  const canWrite = role === 'admin' || role === 'manager'
+
+  const clientName =
+    clients.find((c) => c.id === vehicle.clientId)?.fullName ?? '—'
+
+  const base = rowStyle(index)
+  const rowBg = hovered ? '#eff6ff' : base.background
+
+  return (
+    <tr
+      data-testid={`vehicle-table-row-${vehicle.id}`}
+      style={{ ...base, background: rowBg }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* Марка / Модель */}
+      <td
+        data-testid={`vehicle-table-make-model-${vehicle.id}`}
+        style={tdStyle}
+      >
+        {vehicle.make || '—'} {vehicle.model || ''}
+      </td>
+
+      {/* Год */}
+      <td data-testid={`vehicle-table-year-${vehicle.id}`} style={tdStyle}>
+        {vehicle.year || '—'}
+      </td>
+
+      {/* Гос. номер */}
+      <td data-testid={`vehicle-table-plate-${vehicle.id}`} style={tdStyle}>
+        {vehicle.licensePlate || '—'}
+      </td>
+
+      {/* VIN */}
+      <td
+        data-testid={`vehicle-table-vin-${vehicle.id}`}
+        style={{ ...tdStyle, fontFamily: 'monospace', fontSize: '13px' }}
+      >
+        {vehicle.vin || '—'}
+      </td>
+
+      {/* Клиент */}
+      <td
+        data-testid={`vehicle-table-client-${vehicle.id}`}
+        style={tdStyle}
+      >
+        {clientName}
+      </td>
+
+      {/* Действия */}
+      <td style={{ ...tdStyle, whiteSpace: 'nowrap' }}>
+        {canWrite && (
+          <button
+            data-testid={`btn-edit-vehicle-${vehicle.id}`}
+            type="button"
+            onClick={() => onEdit(vehicle)}
+            style={{
+              padding: '4px 10px',
+              borderRadius: '5px',
+              fontSize: '12px',
+              fontWeight: 500,
+              cursor: 'pointer',
+              border: 'none',
+              background: '#dbeafe',
+              color: '#1e40af',
+            }}
+          >
+            Редактировать
+          </button>
+        )}
+      </td>
+    </tr>
+  )
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
 function VehicleTable({ vehicles, clients, role, isLoading, search, onEdit, onAddFirst }) {
   const canWrite = role === 'admin' || role === 'manager'
 
   return (
     <div
       data-testid="vehicles-table"
-      style={{
-        border: '1px solid #e5e7eb',
-        borderRadius: '8px',
-        overflow: 'hidden',
-      }}
+      style={tableWrapStyle}
     >
       <table style={tableStyle}>
-        <thead>
-          <tr style={{ background: '#f9fafb' }}>
-            <th style={thStyle}>Марка</th>
-            <th style={thStyle}>Модель</th>
+        <thead style={theadStyle}>
+          <tr>
+            <th style={thStyle}>Марка / Модель</th>
             <th style={thStyle}>Год</th>
-            <th style={thStyle}>Гос.номер</th>
+            <th style={thStyle}>Гос. номер</th>
             <th style={thStyle}>VIN</th>
             <th style={thStyle}>Клиент</th>
             <th style={thStyle}>Действия</th>
           </tr>
         </thead>
 
-        {/* Skeleton tbody при начальной загрузке */}
+        {/* Skeleton при загрузке */}
         {isLoading && (
           <tbody data-testid="vehicles-skeleton">
-            <SkeletonRow />
-            <SkeletonRow />
-            <SkeletonRow />
+            <SkeletonRow cols={COLS} />
+            <SkeletonRow cols={COLS} />
+            <SkeletonRow cols={COLS} />
           </tbody>
         )}
 
         {/* Пустое состояние */}
         {!isLoading && vehicles.length === 0 && (
           <tbody>
-            <tr>
-              <td
-                data-testid="vehicles-empty"
-                colSpan={7}
-                style={{
-                  padding: '48px 24px',
-                  textAlign: 'center',
-                  color: '#6b7280',
-                }}
-              >
-                {search
+            <EmptyRow
+              cols={COLS}
+              testId="vehicles-empty"
+              message={
+                search
                   ? 'Автомобили не найдены. Попробуйте изменить запрос.'
-                  : 'Автомобилей пока нет.'}
-                {!search && canWrite && (
-                  <>
-                    {' '}
-                    <button
-                      type="button"
-                      onClick={onAddFirst}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#2563eb',
-                        cursor: 'pointer',
-                        textDecoration: 'underline',
-                        fontSize: '14px',
-                        padding: 0,
-                      }}
-                    >
-                      Добавить первый автомобиль
-                    </button>
-                  </>
-                )}
-              </td>
-            </tr>
+                  : canWrite
+                    ? (
+                      <span>
+                        Автомобилей пока нет.{' '}
+                        <button
+                          type="button"
+                          onClick={onAddFirst}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#2563eb',
+                            cursor: 'pointer',
+                            textDecoration: 'underline',
+                            fontSize: '14px',
+                            padding: 0,
+                          }}
+                        >
+                          Добавить первый автомобиль
+                        </button>
+                      </span>
+                    )
+                    : 'Автомобилей пока нет.'
+              }
+            />
           </tbody>
         )}
 
         {/* Строки данных */}
         {!isLoading && vehicles.length > 0 && (
           <tbody>
-            {vehicles.map((v) => (
-              <VehicleRow
+            {vehicles.map((v, i) => (
+              <VehicleTableRow
                 key={v.id}
                 vehicle={v}
+                index={i}
                 role={role}
                 clients={clients}
                 onEdit={onEdit}
