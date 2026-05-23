@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useForm } from 'react-hook-form'
 import { useCreateClient } from '../../../hooks/useClients.js'
 
@@ -117,7 +118,10 @@ function CreateClientModal({ uid, onCreated, onClose }) {
     }
   }
 
-  return (
+  // Portal: рендерим в document.body, вне DOM-дерева wizard-формы.
+  // Это исправляет nested-form баг: браузер ассоциировал button[type=submit]
+  // с внешней <form> wizard вместо формы модалки → createClient никогда не вызывался.
+  return createPortal(
     <div
       data-testid="wizard-client-modal-overlay"
       style={overlayStyle}
@@ -233,7 +237,8 @@ function CreateClientModal({ uid, onCreated, onClose }) {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
