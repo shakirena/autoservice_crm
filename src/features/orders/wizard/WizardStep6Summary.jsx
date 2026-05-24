@@ -30,13 +30,15 @@ const errorMsgStyle = {
 }
 
 /**
- * Шаг 6 мастера — дата заказа и итоговая сумма.
+ * Шаг 6 мастера — дата заказа и сумма к оплате.
  *
  * @param {{
  *   register: Function,
  *   errors: Object,
  *   totalAmount: number,
  * }} props
+ *   totalAmount — авторасчёт из услуг, показывается как подсказка.
+ *   Фактическое значение редактируется пользователем и хранится в RHF.
  */
 function WizardStep6Summary({ register, errors, totalAmount }) {
   const today = new Date().toISOString().slice(0, 10)
@@ -48,7 +50,7 @@ function WizardStep6Summary({ register, errors, totalAmount }) {
       </h2>
 
       {/* Дата */}
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <label htmlFor="order-date" style={labelStyle}>
           Дата заказа <span style={{ color: '#ef4444' }}>*</span>
         </label>
@@ -65,34 +67,44 @@ function WizardStep6Summary({ register, errors, totalAmount }) {
         )}
       </div>
 
-      {/* Итоговая сумма (read-only display) */}
-      <div
-        data-testid="order-summary-total"
-        style={{
-          padding: '16px 20px',
-          background: '#f8fafc',
-          borderRadius: '8px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          border: '1px solid #e2e8f0',
-        }}
-      >
-        <span style={{ fontSize: '15px', color: '#374151', fontWeight: 500 }}>
-          Итоговая сумма
-        </span>
-        <span
-          data-testid="order-summary-total-amount"
-          style={{ fontSize: '24px', fontWeight: 700, color: '#1e293b' }}
-        >
-          {Number(totalAmount ?? 0).toLocaleString('ru-RU')} ₼
-        </span>
+      {/* Сумма к оплате — редактируемое поле */}
+      <div style={{ marginBottom: '8px' }}>
+        <label htmlFor="order-total-amount" style={labelStyle}>
+          Сумма к оплате (₼)
+        </label>
+        <input
+          id="order-total-amount"
+          data-testid="order-input-total-amount"
+          type="number"
+          min="0"
+          step="0.01"
+          placeholder="0"
+          style={errors.totalAmount ? inputErrorStyle : inputStyle}
+          {...register('totalAmount', {
+            valueAsNumber: true,
+            min: { value: 0, message: 'Сумма не может быть отрицательной' },
+            validate: (v) =>
+              v == null || isNaN(v) || v >= 0 || 'Сумма не может быть отрицательной',
+          })}
+        />
+        {errors.totalAmount && (
+          <p style={errorMsgStyle}>{errors.totalAmount.message}</p>
+        )}
       </div>
 
-      <p style={{ marginTop: '12px', fontSize: '12px', color: '#94a3b8' }}>
-        Сумма рассчитана автоматически на основе выбранных услуг.
-        Для изменения вернитесь к шагу 5.
-      </p>
+      {/* Авторасчёт из услуг — подсказка */}
+      {totalAmount > 0 && (
+        <p
+          data-testid="order-summary-auto-total"
+          style={{ margin: '0 0 20px', fontSize: '12px', color: '#94a3b8' }}
+        >
+          Авторасчёт из выбранных услуг:{' '}
+          <strong style={{ color: '#64748b' }}>
+            {Number(totalAmount).toLocaleString('ru-RU')} ₼
+          </strong>
+          {' '}— можно изменить вручную.
+        </p>
+      )}
     </div>
   )
 }

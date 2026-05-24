@@ -111,7 +111,7 @@ function NewOrderPage() {
     3: ['vehicleComponent'],
     4: [],
     5: [],
-    6: ['date'],
+    6: ['date', 'totalAmount'],
     7: [],
   }
 
