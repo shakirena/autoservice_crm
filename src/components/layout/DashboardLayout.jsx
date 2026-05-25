@@ -30,12 +30,12 @@ function DashboardLayout() {
       <Header />
 
       <div style={styles.body}>
-        {/* Контент слева, сайдбар справа */}
+        {/* Сайдбар слева, контент справа */}
+        <Sidebar />
+
         <main data-testid="dashboard-content" style={styles.content}>
           <Outlet />
         </main>
-
-        <Sidebar />
       </div>
     </div>
   )

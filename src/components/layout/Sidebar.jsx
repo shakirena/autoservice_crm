@@ -21,7 +21,7 @@ const styles = {
     width: '230px',
     minHeight: '100%',
     background: '#fff',
-    borderLeft: `1px solid ${ORANGE[200]}`,
+    borderRight: `1px solid ${ORANGE[200]}`,
     padding: '12px 0 24px',
     flexShrink: 0,
     display: 'flex',
@@ -32,7 +32,7 @@ const styles = {
     width: '230px',
     minHeight: '100%',
     background: '#fff',
-    borderLeft: `1px solid ${ORANGE[200]}`,
+    borderRight: `1px solid ${ORANGE[200]}`,
     flexShrink: 0,
   },
   divider: {
@@ -65,12 +65,12 @@ function navLinkStyle({ isActive }) {
     padding: '10px 20px',
     fontSize: '14px',
     textDecoration: 'none',
-    borderRadius: '4px 0 0 4px',     // правый сайдбар: скруглён слева
-    marginLeft: '8px',
+    borderRadius: '0 4px 4px 0',     // левый сайдбар: скруглён справа
+    marginRight: '8px',
     color: isActive ? ORANGE[700] : '#4b5563',
     background: isActive ? ORANGE[50] : 'transparent',
     fontWeight: isActive ? 700 : 400,
-    borderRight: isActive ? `3px solid ${ORANGE[500]}` : '3px solid transparent',
+    borderLeft: isActive ? `3px solid ${ORANGE[500]}` : '3px solid transparent',
     transition: 'background 0.12s, color 0.12s',
   }
 }
