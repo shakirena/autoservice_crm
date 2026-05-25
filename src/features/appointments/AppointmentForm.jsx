@@ -91,6 +91,7 @@ function AppointmentForm({ appointment, onSuccess, onCancel, prefillDate, prefil
   const [clientMode, setClientMode] = useState(
     appointment?.clientId === null ? 'anonymous' : 'directory',
   )
+  const [submitError, setSubmitError] = useState(null)
 
   const { data: clients = [], isLoading: clientsLoading } = useClients()
   const { data: users = [], isLoading: usersLoading } = useUsers()
@@ -149,6 +150,7 @@ function AppointmentForm({ appointment, onSuccess, onCancel, prefillDate, prefil
   }
 
   async function onSubmit(values) {
+    setSubmitError(null)
     try {
       let clientId = values.clientId || null
       let clientName = values.clientName
@@ -189,6 +191,15 @@ function AppointmentForm({ appointment, onSuccess, onCancel, prefillDate, prefil
       onSuccess()
     } catch (err) {
       console.error('AppointmentForm submit error:', err)
+      // Показываем пользователю человекочитаемое сообщение об ошибке
+      const code = err?.code ?? ''
+      if (code === 'permission-denied') {
+        setSubmitError('Нет прав для сохранения записи. Обратитесь к администратору.')
+      } else if (code.startsWith('unavailable') || code.startsWith('network')) {
+        setSubmitError('Нет соединения с сервером. Проверьте интернет и попробуйте снова.')
+      } else {
+        setSubmitError(err?.message ?? 'Не удалось сохранить запись. Попробуйте ещё раз.')
+      }
     }
   }
 
@@ -412,6 +423,25 @@ function AppointmentForm({ appointment, onSuccess, onCancel, prefillDate, prefil
             {...register('notes')}
           />
         </div>
+
+        {/* Ошибка сохранения */}
+        {submitError && (
+          <div
+            data-testid="appt-submit-error"
+            role="alert"
+            style={{
+              marginBottom: '16px',
+              padding: '10px 14px',
+              background: '#fef2f2',
+              border: '1px solid #fca5a5',
+              borderRadius: '6px',
+              color: '#b91c1c',
+              fontSize: '13px',
+            }}
+          >
+            {submitError}
+          </div>
+        )}
 
         {/* Кнопки */}
         <div style={footerStyle}>
