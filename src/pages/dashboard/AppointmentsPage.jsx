@@ -7,12 +7,14 @@
  */
 
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../lib/authContext.jsx'
 import { useAppointments, useUpdateAppointment } from '../../hooks/useAppointments.js'
 import useAppointmentsStore from '../../store/appointmentsStore.js'
 import AppointmentCalendar from '../../features/appointments/AppointmentCalendar.jsx'
 import AppointmentKanban from '../../features/appointments/AppointmentKanban.jsx'
 import AppointmentForm from '../../features/appointments/AppointmentForm.jsx'
+import QuickOrderForm from '../../features/appointments/QuickOrderForm.jsx'
 
 // ─── Modal wrapper ────────────────────────────────────────────────────────────
 
@@ -41,6 +43,7 @@ const modalStyle = {
 
 function AppointmentsPage() {
   const { user, role } = useAuth()
+  const navigate = useNavigate()
 
   // Фильтры: механик видит только свои записи
   const filters = role === 'mechanic' ? { mechanicId: user?.uid } : {}
@@ -60,6 +63,9 @@ function AppointmentsPage() {
   const [editingAppt, setEditingAppt]   = useState(null)
   const [prefillDate, setPrefillDate]   = useState('')
   const [prefillTime, setPrefillTime]   = useState('')
+
+  // Состояние QuickOrderForm модала (feature #70)
+  const [quickOrderAppt, setQuickOrderAppt] = useState(null)
 
   // Текущая дата навигации в календаре
   const [currentDate, setCurrentDate] = useState(() => new Date())
@@ -88,6 +94,21 @@ function AppointmentsPage() {
 
   async function handleStatusChange(id, newStatus) {
     await updateAppointment({ id, data: { status: newStatus } })
+  }
+
+  // ── Обработчики заказов (feature #70) ────────────────────────────────────────
+
+  function handleCreateOrder(appt) {
+    setQuickOrderAppt(appt)
+  }
+
+  function handleOpenOrder(orderId) {
+    navigate(`/dashboard/orders/${orderId}`)
+  }
+
+  function handleQuickOrderSuccess(orderId) {
+    setQuickOrderAppt(null)
+    navigate(`/dashboard/orders/${orderId}`)
   }
 
   return (
@@ -192,6 +213,9 @@ function AppointmentsPage() {
           onDateChange={setCurrentDate}
           onSlotClick={(date, time) => openNewForm({ date, time })}
           onCardClick={(id) => openEditForm(id)}
+          onCreateOrder={handleCreateOrder}
+          onOpenOrder={handleOpenOrder}
+          role={role}
         />
       )}
 
@@ -202,6 +226,9 @@ function AppointmentsPage() {
           onStatusChange={handleStatusChange}
           onCardClick={(id) => openEditForm(id)}
           onAddClick={(status) => openNewForm({ status })}
+          onCreateOrder={handleCreateOrder}
+          onOpenOrder={handleOpenOrder}
+          role={role}
         />
       )}
 
@@ -223,6 +250,27 @@ function AppointmentsPage() {
               prefillTime={prefillTime}
               onSuccess={closeForm}
               onCancel={closeForm}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* ── QuickOrderForm модал (feature #70) ── */}
+      {quickOrderAppt && (
+        <div
+          data-testid="quick-order-form-overlay"
+          style={overlayStyle}
+          onClick={() => setQuickOrderAppt(null)}
+        >
+          <div
+            data-testid="quick-order-form-modal"
+            style={modalStyle}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <QuickOrderForm
+              appointment={quickOrderAppt}
+              onSuccess={handleQuickOrderSuccess}
+              onCancel={() => setQuickOrderAppt(null)}
             />
           </div>
         </div>

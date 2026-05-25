@@ -131,7 +131,7 @@ function LinkClientModal({ appointmentId, onClose }) {
 
 // ─── KanbanColumn ─────────────────────────────────────────────────────────────
 
-function KanbanColumn({ column, items, onStatusChange, onCardClick, onLinkClient, onAddClick }) {
+function KanbanColumn({ column, items, onStatusChange, onCardClick, onLinkClient, onAddClick, onCreateOrder, onOpenOrder, role }) {
   const color  = STATUS_COLORS[column.status] ?? '#6b7280'
   const bgColor = STATUS_BG[column.status] ?? '#f3f4f6'
 
@@ -223,6 +223,9 @@ function KanbanColumn({ column, items, onStatusChange, onCardClick, onLinkClient
             onStatusChange={onStatusChange}
             onClick={onCardClick}
             onLinkClient={onLinkClient}
+            onCreateOrder={onCreateOrder}
+            onOpenOrder={onOpenOrder}
+            role={role}
           />
         ))}
       </div>
@@ -238,9 +241,12 @@ function KanbanColumn({ column, items, onStatusChange, onCardClick, onLinkClient
  *   onStatusChange: (id: string, newStatus: string) => void,
  *   onCardClick:    (appointmentId: string) => void,
  *   onAddClick?:    (status: string) => void,
+ *   onCreateOrder?: (appointment: import('../../services/appointmentsService.js').AppointmentDoc) => void,
+ *   onOpenOrder?:   (orderId: string) => void,
+ *   role?:          'admin'|'manager'|'mechanic'|'client',
  * }} props
  */
-function AppointmentKanban({ appointments = [], onStatusChange, onCardClick, onAddClick }) {
+function AppointmentKanban({ appointments = [], onStatusChange, onCardClick, onAddClick, onCreateOrder, onOpenOrder, role }) {
   const [linkingId, setLinkingId] = useState(null)
 
   return (
@@ -265,6 +271,9 @@ function AppointmentKanban({ appointments = [], onStatusChange, onCardClick, onA
             onCardClick={onCardClick}
             onLinkClient={(id) => setLinkingId(id)}
             onAddClick={onAddClick}
+            onCreateOrder={onCreateOrder}
+            onOpenOrder={onOpenOrder}
+            role={role}
           />
         )
       })}

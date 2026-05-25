@@ -34,6 +34,7 @@ import { db } from '../lib/firebase.js'
  * @property {string}           clientPhone  - Телефон (всегда заполнен)
  * @property {string}           clientName   - ФИО / имя (всегда заполнен)
  * @property {string|null}      mechanicId   - UID механика или null
+ * @property {string|null}      [orderId]    - ID связанного заказа или null
  * @property {string}           [notes]      - Примечания
  * @property {import('firebase/firestore').Timestamp} [createdAt]
  */
@@ -167,4 +168,16 @@ export async function linkClientToAppointment(id, clientId, clientName, clientPh
     clientName,
     clientPhone,
   })
+}
+
+/**
+ * Привязывает заказ к записи клиента.
+ * Устанавливает orderId в документе appointment.
+ *
+ * @param {string} appointmentId  — ID записи
+ * @param {string} orderId        — ID заказа
+ * @returns {Promise<void>}
+ */
+export async function linkOrderToAppointment(appointmentId, orderId) {
+  await updateDoc(doc(db, 'appointments', appointmentId), { orderId })
 }

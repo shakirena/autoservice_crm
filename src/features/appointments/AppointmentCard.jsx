@@ -21,15 +21,18 @@ import {
 
 /**
  * @param {{
- *   appointment:     import('../../services/appointmentsService.js').AppointmentDoc,
- *   mode:            'calendar' | 'kanban',
- *   onStatusChange?: (id: string, newStatus: string) => void,
- *   onClick?:        (id: string) => void,
- *   onLinkClient?:   (id: string) => void,
+ *   appointment:      import('../../services/appointmentsService.js').AppointmentDoc,
+ *   mode:             'calendar' | 'kanban',
+ *   onStatusChange?:  (id: string, newStatus: string) => void,
+ *   onClick?:         (id: string) => void,
+ *   onLinkClient?:    (id: string) => void,
+ *   onCreateOrder?:   (appointment: import('../../services/appointmentsService.js').AppointmentDoc) => void,
+ *   onOpenOrder?:     (orderId: string) => void,
+ *   role?:            'admin'|'manager'|'mechanic'|'client',
  * }} props
  */
-function AppointmentCard({ appointment, mode, onStatusChange, onClick, onLinkClient }) {
-  const { id, status, clientId, clientName, clientPhone, time, date, duration, serviceType, mechanicId, notes } = appointment
+function AppointmentCard({ appointment, mode, onStatusChange, onClick, onLinkClient, onCreateOrder, onOpenOrder, role }) {
+  const { id, status, clientId, clientName, clientPhone, time, date, duration, serviceType, mechanicId, notes, orderId } = appointment
 
   const color  = STATUS_COLORS[status] ?? '#6b7280'
   const bgColor = STATUS_BG[status] ?? '#f3f4f6'
@@ -185,6 +188,48 @@ function AppointmentCard({ appointment, mode, onStatusChange, onClick, onLinkCli
             }}
           >
             Привязать клиента
+          </button>
+        )}
+
+        {/* Кнопка «Открыть заказ» — если заказ уже привязан (все роли) */}
+        {orderId && (
+          <button
+            data-testid={`appt-card-open-order-${id}`}
+            type="button"
+            onClick={() => onOpenOrder?.(orderId)}
+            style={{
+              padding: '4px 10px',
+              background: '#f0fdf4',
+              color: '#16a34a',
+              border: '1px solid #bbf7d0',
+              borderRadius: '5px',
+              fontSize: '12px',
+              cursor: 'pointer',
+              fontWeight: 500,
+            }}
+          >
+            Открыть заказ
+          </button>
+        )}
+
+        {/* Кнопка «Создать заказ» — если заказа нет и роль admin/manager */}
+        {!orderId && (role === 'admin' || role === 'manager') && (
+          <button
+            data-testid={`appt-card-create-order-${id}`}
+            type="button"
+            onClick={() => onCreateOrder?.(appointment)}
+            style={{
+              padding: '4px 10px',
+              background: '#fff7ed',
+              color: '#ea580c',
+              border: '1px solid #fed7aa',
+              borderRadius: '5px',
+              fontSize: '12px',
+              cursor: 'pointer',
+              fontWeight: 500,
+            }}
+          >
+            Создать заказ
           </button>
         )}
       </div>

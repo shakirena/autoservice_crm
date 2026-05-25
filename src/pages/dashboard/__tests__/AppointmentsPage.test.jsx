@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
@@ -35,6 +36,14 @@ vi.mock('../../../features/appointments/AppointmentForm.jsx', () => ({
   default: ({ onCancel }) => (
     <div data-testid="mock-appt-form">
       <button data-testid="mock-form-cancel" onClick={onCancel}>Отмена</button>
+    </div>
+  ),
+}))
+
+vi.mock('../../../features/appointments/QuickOrderForm.jsx', () => ({
+  default: ({ onCancel }) => (
+    <div data-testid="mock-quick-order-form">
+      <button data-testid="mock-quick-order-cancel" onClick={onCancel}>Отмена</button>
     </div>
   ),
 }))
@@ -82,14 +91,14 @@ describe('AppointmentsPage', () => {
 
   it('рендерит страницу с заголовком «Записи клиентов»', async () => {
     const AppointmentsPage = await importPage()
-    render(<AppointmentsPage />)
+    render(<MemoryRouter><AppointmentsPage /></MemoryRouter>)
     expect(screen.getByTestId('appointments-page')).toBeInTheDocument()
     expect(screen.getByText('Записи клиентов')).toBeInTheDocument()
   })
 
   it('отображает кнопки переключения вида и «Новая запись»', async () => {
     const AppointmentsPage = await importPage()
-    render(<AppointmentsPage />)
+    render(<MemoryRouter><AppointmentsPage /></MemoryRouter>)
     expect(screen.getByTestId('view-toggle-calendar')).toBeInTheDocument()
     expect(screen.getByTestId('view-toggle-kanban')).toBeInTheDocument()
     expect(screen.getByTestId('appointments-new-btn')).toBeInTheDocument()
@@ -97,21 +106,21 @@ describe('AppointmentsPage', () => {
 
   it('по умолчанию показывает календарное представление', async () => {
     const AppointmentsPage = await importPage()
-    render(<AppointmentsPage />)
+    render(<MemoryRouter><AppointmentsPage /></MemoryRouter>)
     expect(screen.getByTestId('mock-calendar')).toBeInTheDocument()
     expect(screen.queryByTestId('mock-kanban')).not.toBeInTheDocument()
   })
 
   it('переключение на канбан вызывает setView с "kanban"', async () => {
     const AppointmentsPage = await importPage()
-    render(<AppointmentsPage />)
+    render(<MemoryRouter><AppointmentsPage /></MemoryRouter>)
     await userEvent.click(screen.getByTestId('view-toggle-kanban'))
     expect(storeMockState.setView).toHaveBeenCalledWith('kanban')
   })
 
   it('кнопка «Новая запись» открывает форму', async () => {
     const AppointmentsPage = await importPage()
-    render(<AppointmentsPage />)
+    render(<MemoryRouter><AppointmentsPage /></MemoryRouter>)
     expect(screen.queryByTestId('mock-appt-form')).not.toBeInTheDocument()
     await userEvent.click(screen.getByTestId('appointments-new-btn'))
     expect(screen.getByTestId('mock-appt-form')).toBeInTheDocument()
@@ -119,7 +128,7 @@ describe('AppointmentsPage', () => {
 
   it('кнопка «Отмена» в форме закрывает модал', async () => {
     const AppointmentsPage = await importPage()
-    render(<AppointmentsPage />)
+    render(<MemoryRouter><AppointmentsPage /></MemoryRouter>)
     await userEvent.click(screen.getByTestId('appointments-new-btn'))
     expect(screen.getByTestId('mock-appt-form')).toBeInTheDocument()
     await userEvent.click(screen.getByTestId('mock-form-cancel'))
@@ -128,7 +137,7 @@ describe('AppointmentsPage', () => {
 
   it('клик на слот в календаре открывает форму', async () => {
     const AppointmentsPage = await importPage()
-    render(<AppointmentsPage />)
+    render(<MemoryRouter><AppointmentsPage /></MemoryRouter>)
     expect(screen.queryByTestId('mock-appt-form')).not.toBeInTheDocument()
     await userEvent.click(screen.getByTestId('mock-slot-click'))
     expect(screen.getByTestId('mock-appt-form')).toBeInTheDocument()
@@ -137,7 +146,7 @@ describe('AppointmentsPage', () => {
   it('показывает канбан когда view === "kanban"', async () => {
     setup({ view: 'kanban' })
     const AppointmentsPage = await importPage()
-    render(<AppointmentsPage />)
+    render(<MemoryRouter><AppointmentsPage /></MemoryRouter>)
     expect(screen.getByTestId('mock-kanban')).toBeInTheDocument()
     expect(screen.queryByTestId('mock-calendar')).not.toBeInTheDocument()
   })

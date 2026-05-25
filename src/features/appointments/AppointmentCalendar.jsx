@@ -200,7 +200,7 @@ function CalendarToolbar({ period, currentDate, onPeriodChange, onDateChange }) 
 
 // ─── Day View ─────────────────────────────────────────────────────────────────
 
-function DayView({ date, appointments, onSlotClick, onCardClick }) {
+function DayView({ date, appointments, onSlotClick, onCardClick, onCreateOrder, onOpenOrder, role }) {
   const dateStr = isoDate(date)
   const apptMap = {}
   appointments.filter((a) => a.date === dateStr).forEach((a) => {
@@ -241,6 +241,9 @@ function DayView({ date, appointments, onSlotClick, onCardClick }) {
                     appointment={a}
                     mode="calendar"
                     onClick={onCardClick}
+                    onCreateOrder={onCreateOrder}
+                    onOpenOrder={onOpenOrder}
+                    role={role}
                   />
                 ))}
               </td>
@@ -254,7 +257,7 @@ function DayView({ date, appointments, onSlotClick, onCardClick }) {
 
 // ─── Week View ────────────────────────────────────────────────────────────────
 
-function WeekView({ date, appointments, onSlotClick, onCardClick }) {
+function WeekView({ date, appointments, onSlotClick, onCardClick, onCreateOrder, onOpenOrder, role }) {
   const monday = getWeekMonday(date)
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(monday)
@@ -313,6 +316,9 @@ function WeekView({ date, appointments, onSlotClick, onCardClick }) {
                         appointment={a}
                         mode="calendar"
                         onClick={onCardClick}
+                        onCreateOrder={onCreateOrder}
+                        onOpenOrder={onOpenOrder}
+                        role={role}
                       />
                     ))}
                   </td>
@@ -418,13 +424,16 @@ function MonthView({ date, appointments, onDayClick }) {
 
 /**
  * @param {{
- *   appointments:   import('../../services/appointmentsService.js').AppointmentDoc[],
- *   period:         'day'|'week'|'month',
- *   currentDate:    Date,
- *   onPeriodChange: (period: string) => void,
- *   onDateChange:   (date: Date) => void,
- *   onSlotClick:    (date: string, time: string) => void,
- *   onCardClick:    (appointmentId: string) => void,
+ *   appointments:    import('../../services/appointmentsService.js').AppointmentDoc[],
+ *   period:          'day'|'week'|'month',
+ *   currentDate:     Date,
+ *   onPeriodChange:  (period: string) => void,
+ *   onDateChange:    (date: Date) => void,
+ *   onSlotClick:     (date: string, time: string) => void,
+ *   onCardClick:     (appointmentId: string) => void,
+ *   onCreateOrder?:  (appointment: import('../../services/appointmentsService.js').AppointmentDoc) => void,
+ *   onOpenOrder?:    (orderId: string) => void,
+ *   role?:           'admin'|'manager'|'mechanic'|'client',
  * }} props
  */
 function AppointmentCalendar({
@@ -435,6 +444,9 @@ function AppointmentCalendar({
   onDateChange,
   onSlotClick,
   onCardClick,
+  onCreateOrder,
+  onOpenOrder,
+  role,
 }) {
   function handleDayClick(d) {
     onDateChange?.(d)
@@ -456,6 +468,9 @@ function AppointmentCalendar({
           appointments={appointments}
           onSlotClick={onSlotClick}
           onCardClick={onCardClick}
+          onCreateOrder={onCreateOrder}
+          onOpenOrder={onOpenOrder}
+          role={role}
         />
       )}
 
@@ -465,6 +480,9 @@ function AppointmentCalendar({
           appointments={appointments}
           onSlotClick={onSlotClick}
           onCardClick={onCardClick}
+          onCreateOrder={onCreateOrder}
+          onOpenOrder={onOpenOrder}
+          role={role}
         />
       )}
 

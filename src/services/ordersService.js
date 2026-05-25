@@ -28,6 +28,7 @@ import { db } from '../lib/firebase.js'
  * @property {string} date
  * @property {string} createdBy
  * @property {'draft'|'in_progress'|'completed'} status
+ * @property {string|null} [appointmentId]  - ID связанной записи или null
  * @property {import('firebase/firestore').Timestamp|null} completedAt
  * @property {import('firebase/firestore').Timestamp} createdAt
  */
@@ -84,31 +85,34 @@ export async function getOrder(id) {
  * Создаёт новый заказ.
  * services[] хранится как снапшот (name+price) — историческая точность цен (ADR-21-02).
  * completedAt устанавливается в null при создании.
+ * appointmentId — опциональная ссылка на запись клиента (feature #70).
  *
  * @param {{
  *   clientId: string,
- *   vehicleId: string,
- *   vehicleComponent: string,
- *   componentParams: Object,
- *   services: OrderServiceItem[],
- *   totalAmount: number,
+ *   vehicleId?: string,
+ *   vehicleComponent?: string,
+ *   componentParams?: Object,
+ *   services?: OrderServiceItem[],
+ *   totalAmount?: number,
  *   date: string,
  *   createdBy: string,
  *   status?: 'draft'|'in_progress'|'completed',
+ *   appointmentId?: string|null,
  * }} data
  * @returns {Promise<{ id: string }>}
  */
 export async function createOrder(data) {
   const ref = await addDoc(collection(db, 'orders'), {
     clientId: data.clientId,
-    vehicleId: data.vehicleId,
-    vehicleComponent: data.vehicleComponent,
+    vehicleId: data.vehicleId ?? null,
+    vehicleComponent: data.vehicleComponent ?? '',
     componentParams: data.componentParams ?? {},
     services: data.services ?? [],
     totalAmount: Number(data.totalAmount ?? 0),
     date: data.date,
     createdBy: data.createdBy,
     status: data.status ?? 'draft',
+    appointmentId: data.appointmentId ?? null,
     completedAt: null,
     createdAt: serverTimestamp(),
   })

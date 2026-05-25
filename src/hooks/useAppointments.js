@@ -15,6 +15,7 @@ import {
   updateAppointment,
   deleteAppointment,
   linkClientToAppointment,
+  linkOrderToAppointment,
 } from '../services/appointmentsService.js'
 
 /** Ключ кеша TanStack Query для коллекции appointments */
@@ -128,6 +129,22 @@ export function useLinkClient() {
   return useMutation({
     mutationFn: ({ id, clientId, clientName, clientPhone }) =>
       linkClientToAppointment(id, clientId, clientName, clientPhone),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: APPOINTMENTS_QUERY_KEY })
+    },
+  })
+}
+
+/**
+ * Мутация привязки заказа к записи клиента (feature #70).
+ * При успехе инвалидирует кеш appointments.
+ *
+ * @returns {import('@tanstack/react-query').UseMutationResult}
+ */
+export function useLinkOrder() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ appointmentId, orderId }) => linkOrderToAppointment(appointmentId, orderId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: APPOINTMENTS_QUERY_KEY })
     },
