@@ -135,4 +135,50 @@ describe('AppointmentForm', () => {
       expect(screen.getByText('Укажите дату')).toBeInTheDocument()
     })
   })
+
+  /**
+   * REGRESSION: #70 — анонимная запись не сохранялась из-за того, что
+   * скрытый input clientId (renderился только в режиме 'directory') размонтировался,
+   * но RHF (shouldUnregister:false) сохранял правило required: 'Выберите клиента',
+   * и форма тихо блокировала сабмит. Теперь clientId всегда зарегистрирован
+   * вне условного блока с валидацией через validate-функцию.
+   */
+  it('REGRESSION: анонимная запись успешно вызывает createAppointment (clientId не блокирует submit)', async () => {
+    const mockCreate = vi.fn().mockResolvedValue({ id: 'new-id' })
+    useCreateAppointment.mockReturnValue({ mutateAsync: mockCreate, isPending: false })
+
+    const AppointmentForm = await importForm()
+    const onSuccess = vi.fn()
+    render(
+      <AppointmentForm
+        onSuccess={onSuccess}
+        onCancel={vi.fn()}
+        prefillDate="2026-05-25"
+        prefillTime="10:00"
+      />,
+    )
+
+    // Открываем форму в режиме 'directory' (по умолчанию), затем переключаемся
+    await userEvent.click(screen.getByTestId('client-mode-anonymous'))
+
+    // Заполняем обязательные поля анонимного режима
+    await userEvent.type(screen.getByTestId('appt-input-clientName'), 'Анонимный Клиент')
+    await userEvent.type(screen.getByTestId('appt-input-clientPhone'), '+994501234567')
+
+    // Выбираем тип услуги
+    await userEvent.selectOptions(screen.getByTestId('appt-select-serviceType'), 'Диагностика')
+
+    // Сабмитим форму
+    await userEvent.click(screen.getByTestId('appt-form-submit'))
+
+    // createAppointment должен быть вызван с clientId = null
+    await waitFor(() => {
+      expect(mockCreate).toHaveBeenCalledOnce()
+    })
+    const payload = mockCreate.mock.calls[0][0]
+    expect(payload.clientId).toBeNull()
+    expect(payload.clientName).toBe('Анонимный Клиент')
+    expect(payload.clientPhone).toBe('+994501234567')
+    expect(onSuccess).toHaveBeenCalled()
+  })
 })

@@ -104,6 +104,7 @@ function AppointmentForm({ appointment, onSuccess, onCancel, prefillDate, prefil
     handleSubmit,
     watch,
     setValue,
+    clearErrors,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -204,7 +205,10 @@ function AppointmentForm({ appointment, onSuccess, onCancel, prefillDate, prefil
             key={m.value}
             type="button"
             data-testid={`client-mode-${m.value}`}
-            onClick={() => setClientMode(m.value)}
+            onClick={() => {
+              setClientMode(m.value)
+              clearErrors() // Очищаем ошибки предыдущего режима
+            }}
             style={{
               padding: '6px 14px',
               borderRadius: '6px',
@@ -223,6 +227,20 @@ function AppointmentForm({ appointment, onSuccess, onCancel, prefillDate, prefil
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
 
+        {/*
+          clientId всегда зарегистрирован (вне условного блока), чтобы избежать
+          бага RHF shouldUnregister:false — при размонтировании скрытого поля его
+          правило required сохранялось, и форма тихо блокировала сабмит в режиме
+          'anonymous'/'new'. Валидация теперь динамическая через validate.
+        */}
+        <input
+          type="hidden"
+          {...register('clientId', {
+            validate: (v) =>
+              clientMode !== 'directory' || Boolean(v) || 'Выберите клиента из справочника',
+          })}
+        />
+
         {/* ── Режим: из справочника ── */}
         {clientMode === 'directory' && (
           <>
@@ -230,7 +248,6 @@ function AppointmentForm({ appointment, onSuccess, onCancel, prefillDate, prefil
               <label style={labelStyle}>
                 Клиент <span style={{ color: '#ef4444' }}>*</span>
               </label>
-              <input type="hidden" {...register('clientId', { required: clientMode === 'directory' ? 'Выберите клиента' : false })} />
               <SearchableSelect
                 testId="appt-select-client"
                 options={clientOptions}
