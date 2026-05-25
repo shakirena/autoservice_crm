@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "autoservice-crm-b09d8",
     "public": "dist",
     "ignore": [
       "firebase.json",
