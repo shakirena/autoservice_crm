@@ -7,6 +7,7 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     minHeight: '100vh',
+    background: '#f9fafb',
   },
   body: {
     display: 'flex',
@@ -15,9 +16,11 @@ const styles = {
   },
   content: {
     flex: 1,
-    padding: '24px',
+    padding: '28px 32px',
     overflowY: 'auto',
-    background: '#fff',
+    background: '#f9fafb',
+    // Минимальная ширина чтобы таблицы не схлопывались
+    minWidth: 0,
   },
 }
 
@@ -27,11 +30,12 @@ function DashboardLayout() {
       <Header />
 
       <div style={styles.body}>
-        <Sidebar />
-
+        {/* Контент слева, сайдбар справа */}
         <main data-testid="dashboard-content" style={styles.content}>
           <Outlet />
         </main>
+
+        <Sidebar />
       </div>
     </div>
   )
