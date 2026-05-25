@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useClients } from '../../../hooks/useClients.js'
+import SearchableSelect from '../../../components/ui/SearchableSelect.jsx'
 import CreateClientModal from './CreateClientModal.jsx'
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
@@ -11,19 +12,6 @@ const labelStyle = {
   fontWeight: 500,
   color: '#374151',
 }
-
-const selectStyle = {
-  width: '100%',
-  padding: '9px 12px',
-  border: '1px solid #d1d5db',
-  borderRadius: '6px',
-  fontSize: '14px',
-  outline: 'none',
-  boxSizing: 'border-box',
-  background: '#fff',
-}
-
-const selectErrorStyle = { ...selectStyle, borderColor: '#ef4444' }
 
 const errorMsgStyle = { color: '#ef4444', fontSize: '12px', marginTop: '4px' }
 
@@ -40,23 +28,24 @@ const linkBtnStyle = {
 // ─── Main step component ───────────────────────────────────────────────────────
 
 /**
- * Шаг 1 мастера создания заказа — выбор клиента.
+ * Шаг 1 мастера создания заказа — выбор клиента с поиском.
  * Поддерживает создание нового клиента через модальное окно.
  *
  * @param {{
  *   register: Function,
  *   errors: Object,
  *   setValue: Function,
+ *   watch: Function,
  *   uid: string,
  * }} props
  */
-function WizardStep1Client({ register, errors, setValue, uid }) {
+function WizardStep1Client({ register, errors, setValue, watch, uid }) {
   const { data: clients = [], isLoading } = useClients()
   const [showModal, setShowModal] = useState(false)
-  // Ожидаем появления нового клиента в списке перед вызовом setValue.
-  // Без этого браузер игнорирует select.value = id, если <option> ещё нет в DOM.
-  // useRef вместо useState — не вызывает дополнительных ре-рендеров и не нарушает
-  // правило react-hooks/set-state-in-effect (нет setState внутри effect-тела).
+
+  // pendingClientIdRef — ждём появления нового клиента в списке после создания.
+  // useRef вместо useState — не вызывает ре-рендер и не нарушает
+  // react-hooks/set-state-in-effect.
   const pendingClientIdRef = useRef(null)
 
   useEffect(() => {
@@ -68,8 +57,22 @@ function WizardStep1Client({ register, errors, setValue, uid }) {
   }, [clients, setValue])
 
   function handleCreated(newId) {
-    pendingClientIdRef.current = newId // синхронно до следующего рендера
+    pendingClientIdRef.current = newId
     setShowModal(false)
+  }
+
+  // Текущее значение clientId из формы (для SearchableSelect)
+  const currentClientId = watch ? watch('clientId') : ''
+
+  // Опции для SearchableSelect: label = ФИО, sublabel = телефон (поиск по обоим)
+  const options = clients.map((c) => ({
+    value: c.id,
+    label: c.fullName,
+    sublabel: c.phone,
+  }))
+
+  function handleChange(selectedId) {
+    setValue('clientId', selectedId, { shouldValidate: true })
   }
 
   return (
@@ -82,22 +85,23 @@ function WizardStep1Client({ register, errors, setValue, uid }) {
         <label htmlFor="order-clientId" style={labelStyle}>
           Клиент <span style={{ color: '#ef4444' }}>*</span>
         </label>
-        <select
-          id="order-clientId"
-          data-testid="order-select-client"
-          disabled={isLoading}
-          style={errors.clientId ? selectErrorStyle : selectStyle}
+
+        {/* Скрытый input для регистрации поля в RHF (валидация) */}
+        <input
+          type="hidden"
           {...register('clientId', { required: 'Выберите клиента' })}
-        >
-          <option value="">
-            {isLoading ? 'Загрузка клиентов...' : '— Выберите клиента —'}
-          </option>
-          {clients.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.fullName} ({c.phone})
-            </option>
-          ))}
-        </select>
+        />
+
+        <SearchableSelect
+          testId="order-select-client"
+          options={options}
+          value={currentClientId}
+          onChange={handleChange}
+          placeholder="— Начните вводить имя или телефон —"
+          loading={isLoading}
+          hasError={Boolean(errors.clientId)}
+        />
+
         {errors.clientId && (
           <p style={errorMsgStyle}>{errors.clientId.message}</p>
         )}

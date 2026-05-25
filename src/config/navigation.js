@@ -5,22 +5,25 @@
 /** @type {Record<string, NavItem[]>} */
 const NAV_CONFIG = {
   admin: [
-    { label: 'Пользователи', path: 'users',      testId: 'nav-item-users'      },
-    { label: 'Заказы',       path: 'orders',     testId: 'nav-item-orders'     },
-    { label: 'Клиенты',      path: 'clients',    testId: 'nav-item-clients'    },
-    { label: 'Автомобили',   path: 'vehicles',   testId: 'nav-item-vehicles'   },
-    { label: 'Услуги',       path: 'services',   testId: 'nav-item-services'   },
-    { label: 'Аналитика',    path: 'analytics',  testId: 'nav-item-analytics'  },
-    { label: 'Настройки',    path: 'settings',   testId: 'nav-item-settings'   },
+    { label: 'Пользователи', path: 'users',         testId: 'nav-item-users'         },
+    { label: 'Заказы',       path: 'orders',        testId: 'nav-item-orders'        },
+    { label: 'Записи',       path: 'appointments',  testId: 'nav-item-appointments'  },
+    { label: 'Клиенты',      path: 'clients',       testId: 'nav-item-clients'       },
+    { label: 'Автомобили',   path: 'vehicles',      testId: 'nav-item-vehicles'      },
+    { label: 'Услуги',       path: 'services',      testId: 'nav-item-services'      },
+    { label: 'Аналитика',    path: 'analytics',     testId: 'nav-item-analytics'     },
+    { label: 'Настройки',    path: 'settings',      testId: 'nav-item-settings'      },
   ],
   manager: [
-    { label: 'Заказы',       path: 'orders',     testId: 'nav-item-orders'     },
-    { label: 'Клиенты',      path: 'clients',    testId: 'nav-item-clients'    },
-    { label: 'Автомобили',   path: 'vehicles',   testId: 'nav-item-vehicles'   },
-    { label: 'Услуги',       path: 'services',   testId: 'nav-item-services'   },
+    { label: 'Заказы',   path: 'orders',        testId: 'nav-item-orders'        },
+    { label: 'Записи',   path: 'appointments',  testId: 'nav-item-appointments'  },
+    { label: 'Клиенты',  path: 'clients',       testId: 'nav-item-clients'       },
+    { label: 'Автомобили', path: 'vehicles',    testId: 'nav-item-vehicles'      },
+    { label: 'Услуги',   path: 'services',      testId: 'nav-item-services'      },
   ],
   mechanic: [
-    { label: 'Мои заказы', path: 'my-orders', testId: 'nav-item-my-orders' },
+    { label: 'Мои заказы', path: 'my-orders',     testId: 'nav-item-my-orders'     },
+    { label: 'Записи',     path: 'appointments',  testId: 'nav-item-appointments'  },
   ],
   client: [],
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useVehiclesByClient } from '../../../hooks/useVehicles.js'
+import SearchableSelect from '../../../components/ui/SearchableSelect.jsx'
 import CreateVehicleModal from './CreateVehicleModal.jsx'
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
@@ -11,19 +12,6 @@ const labelStyle = {
   fontWeight: 500,
   color: '#374151',
 }
-
-const selectStyle = {
-  width: '100%',
-  padding: '9px 12px',
-  border: '1px solid #d1d5db',
-  borderRadius: '6px',
-  fontSize: '14px',
-  outline: 'none',
-  boxSizing: 'border-box',
-  background: '#fff',
-}
-
-const selectErrorStyle = { ...selectStyle, borderColor: '#ef4444' }
 
 const errorMsgStyle = { color: '#ef4444', fontSize: '12px', marginTop: '4px' }
 
@@ -40,22 +28,23 @@ const linkBtnStyle = {
 // ─── Main step component ───────────────────────────────────────────────────────
 
 /**
- * Шаг 2 мастера — выбор автомобиля клиента.
+ * Шаг 2 мастера — выбор автомобиля клиента с поиском.
  * Поддерживает создание нового автомобиля через модальное окно.
- * clientId из wizard предзаполняется в модалку.
  *
  * @param {{
  *   clientId: string,
  *   register: Function,
  *   errors: Object,
  *   setValue: Function,
+ *   watch: Function,
  * }} props
  */
-function WizardStep2Vehicle({ clientId, register, errors, setValue }) {
+function WizardStep2Vehicle({ clientId, register, errors, setValue, watch }) {
   const { data: vehicles = [], isLoading } = useVehiclesByClient(clientId)
   const [showModal, setShowModal] = useState(false)
+
+  // pendingVehicleIdRef — ждём появления нового авто в списке после создания.
   // useRef вместо useState — не нарушает react-hooks/set-state-in-effect.
-  // Effect сработает когда vehicles обновится после рефетча.
   const pendingVehicleIdRef = useRef(null)
 
   useEffect(() => {
@@ -67,8 +56,21 @@ function WizardStep2Vehicle({ clientId, register, errors, setValue }) {
   }, [vehicles, setValue])
 
   function handleCreated(newId) {
-    pendingVehicleIdRef.current = newId // синхронно до следующего рендера
+    pendingVehicleIdRef.current = newId
     setShowModal(false)
+  }
+
+  const currentVehicleId = watch ? watch('vehicleId') : ''
+
+  // Опции: label = Марка Модель Год, sublabel = гос.номер (поиск по обоим)
+  const options = vehicles.map((v) => ({
+    value: v.id,
+    label: `${v.make} ${v.model} ${v.year}`,
+    sublabel: v.licensePlate,
+  }))
+
+  function handleChange(selectedId) {
+    setValue('vehicleId', selectedId, { shouldValidate: true })
   }
 
   return (
@@ -89,26 +91,29 @@ function WizardStep2Vehicle({ clientId, register, errors, setValue }) {
             <label htmlFor="order-vehicleId" style={labelStyle}>
               Автомобиль <span style={{ color: '#ef4444' }}>*</span>
             </label>
-            <select
-              id="order-vehicleId"
-              data-testid="order-select-vehicle"
-              disabled={isLoading}
-              style={errors.vehicleId ? selectErrorStyle : selectStyle}
+
+            {/* Скрытый input для регистрации поля в RHF (валидация) */}
+            <input
+              type="hidden"
               {...register('vehicleId', { required: 'Выберите автомобиль' })}
-            >
-              <option value="">
-                {isLoading
+            />
+
+            <SearchableSelect
+              testId="order-select-vehicle"
+              options={options}
+              value={currentVehicleId}
+              onChange={handleChange}
+              placeholder={
+                isLoading
                   ? 'Загрузка...'
                   : vehicles.length === 0
                     ? 'Нет автомобилей — добавьте ниже'
-                    : '— Выберите автомобиль —'}
-              </option>
-              {vehicles.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.make} {v.model} {v.year} — {v.licensePlate}
-                </option>
-              ))}
-            </select>
+                    : '— Введите марку или гос. номер —'
+              }
+              loading={isLoading}
+              hasError={Boolean(errors.vehicleId)}
+            />
+
             {errors.vehicleId && (
               <p style={errorMsgStyle}>{errors.vehicleId.message}</p>
             )}

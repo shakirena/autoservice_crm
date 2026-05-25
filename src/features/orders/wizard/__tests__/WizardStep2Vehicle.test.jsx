@@ -176,7 +176,7 @@ describe('WizardStep2Vehicle', () => {
     })
   })
 
-  it('отображает автомобили клиента в select', async () => {
+  it('отображает автомобили клиента в dropdown после открытия', async () => {
     useVehiclesByClient.mockReturnValue(
       makeVehicles([
         { id: 'v1', make: 'Toyota', model: 'Camry', year: 2020, licensePlate: '10-AA-001' },
@@ -194,7 +194,10 @@ describe('WizardStep2Vehicle', () => {
       />
     )
 
-    expect(screen.getByText(/Toyota Camry 2020/)).toBeInTheDocument()
-    expect(screen.getByText(/BMW X5 2022/)).toBeInTheDocument()
+    // Dropdown открывается по клику на input (SearchableSelect)
+    await userEvent.click(screen.getByTestId('order-select-vehicle'))
+    expect(screen.getByTestId('order-select-vehicle-dropdown')).toBeInTheDocument()
+    expect(screen.getByTestId('order-select-vehicle-option-v1')).toBeInTheDocument()
+    expect(screen.getByTestId('order-select-vehicle-option-v2')).toBeInTheDocument()
   })
 })

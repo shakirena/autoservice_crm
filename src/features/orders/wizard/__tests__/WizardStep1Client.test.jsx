@@ -175,7 +175,7 @@ describe('WizardStep1Client', () => {
     })
   })
 
-  it('отображает клиентов из useClients в select', async () => {
+  it('отображает клиентов из useClients в dropdown после открытия', async () => {
     useClients.mockReturnValue(
       makeClients([
         { id: 'c1', fullName: 'Иванов Иван', phone: '+994501111111' },
@@ -193,7 +193,10 @@ describe('WizardStep1Client', () => {
       />
     )
 
-    expect(screen.getByText(/Иванов Иван/)).toBeInTheDocument()
-    expect(screen.getByText(/Петров Пётр/)).toBeInTheDocument()
+    // Dropdown открывается по клику на input (SearchableSelect)
+    await userEvent.click(screen.getByTestId('order-select-client'))
+    expect(screen.getByTestId('order-select-client-dropdown')).toBeInTheDocument()
+    expect(screen.getByTestId('order-select-client-option-c1')).toBeInTheDocument()
+    expect(screen.getByTestId('order-select-client-option-c2')).toBeInTheDocument()
   })
 })
